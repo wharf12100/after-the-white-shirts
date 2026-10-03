@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>役男日記——事件簿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --room: #ddd6c2;
+    --cover: #f2ede0;
+    --cover-dark: #ded5bd;
+    --paper: #faf7ee;
+    --paper-line: #b7c6da;
+    --ink: #24407a;
+    --ink-soft: #5b6f95;
+    --accent: #8a5a34;
+    --accent2: #2f4c86;
+    --rust: #a8562f;
+    --gold: #b08d3e;
+    --pen-blue: #223f7c;
+    --stamp-red: #b8352a;
+    --stamp-red-soft: #c65a4a;
+    --shadow: rgba(30,26,15,0.35);
+  }
+  /* This page always renders as a physical paper diary (cream paper, blue
+     ruled lines) regardless of the viewer's OS/browser dark-mode setting —
+     a scanned paper notebook doesn't have a "dark mode". */
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background: var(--room);
+    background-image:
+      radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.05), transparent 60%);
+    color: var(--ink);
+    font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:100vh;
+    padding: 24px 12px 40px;
+  }
+
+  .brand{
+    text-align:center;
+    color: var(--ink-soft);
+    font-size: 0.8em;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+    opacity: 0.75;
+  }
+
+  /* ---------- Stage (book + side tabs) ---------- */
+  .stage{
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    width: 100%;
+  }
+
+  /* ---------- Book (two-page spread) ---------- */
+  .book{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(1107px, 94vw);
+    background: linear-gradient(155deg, var(--cover) 0%, var(--cover) 55%, var(--cover-dark) 100%);
+    border-radius: 6px;
+    box-shadow:
+      0 30px 60px var(--shadow),
+      0 10px 22px rgba(0,0,0,0.22),
+      inset 0 1px 0 rgba(255,255,255,0.3),
+      inset 0 -6px 12px rgba(0,0,0,0.16);
+    padding: 14px 14px 6px;
+    flex: 0 0 auto;
+  }
+
+  .spread{
+    display:flex;
+    flex-direction: row;
+    align-items: stretch;
+    flex: 1 1 auto;
+  }
+
+  /* stitched spiral-notebook binding instead of a leather book spine */
+  .spine-center{
+    position: relative;
+    width: 22px;
+    flex: 0 0 auto;
+    background: linear-gradient(90deg,
+      var(--cover-dark) 0%,
+      var(--cover) 30%,
+      var(--cover) 70%,
+      var(--cover-dark) 100%);
+    box-shadow:
+      inset 4px 0 8px -6px rgba(0,0,0,0.45),
+      inset -4px 0 8px -6px rgba(0,0,0,0.45);
+  }
+  .spine-center::before{
+    content:"";
+    position:absolute;
+    left: 50%; top: 14px; bottom: 14px; width: 3px;
+    transform: translateX(-50%);
+    background: repeating-linear-gradient(to bottom,
+      var(--accent) 0 3px,
+      transparent 3px 7px);
+    opacity: 0.7;
+  }
+  .spine-center::after{
+    content:"";
+    position:absolute;
+    left: 50%; top: 10px; bottom: 10px; width: 12px;
+    transform: translateX(-50%);
+    background-image:
+      radial-gradient(circle, rgba(0,0,0,0.32) 2.6px, transparent 3px);
+    background-size: 100% 16px;
+    background-repeat: repeat-y;
+    background-position: center;
+  }
+
+  .leaf{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-width: 0;
+    background: var(--paper);
+    height: min(770px, 86vh);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05), 0 6px 14px rgba(0,0,0,0.2);
+    overflow: visible;
+  }
+  .leaf-left{
+    border-radius: 8px 0 0 8px;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,0,0,0.05),
+      -2px 0 0 rgba(0,0,0,0.05), -4px 0 0 rgba(0,0,0,0.035), -6px 0 0 rgba(0,0,0,0.02);
+  }
+  .leaf-right{
+    border-radius: 0 8px 8px 0;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,0,0,0.05),
+      2px 0 0 rgba(0,0,0,0.05), 4px 0 0 rgba(0,0,0,0.035), 6px 0 0 rgba(0,0,0,0.02);
+  }
+
+  .leaf-content{
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .leaf-inner{
+    position: relative;
+    min-height: 100%;
+    background-image:
+      radial-gradient(ellipse 160px 90px at 85% 18%, rgba(90,130,190,0.10), transparent 70%),
+      radial-gradient(ellipse 140px 100px at 12% 78%, rgba(90,130,190,0.08), transparent 70%);
+    background-position: 0 0, 0 0;
+  }
+  .leaf-inner::before{
+    /* left margin rule */
+    content:"";
+    position:absolute;
+    top:0; bottom:0; left: 40px;
+    width: 1px;
+    background: var(--stamp-red);
+    opacity: 0.3;
+  }
+  /* faint repeating footprint watermark along each page's outer edge */
+  .leaf-left .leaf-inner::after,
+  .leaf-right .leaf-inner::after{
+    content:"";
+    position:absolute;
+    top:10px; bottom:10px;
+    width: 30px;
+    opacity: 0.16;
+    pointer-events:none;
+    background-repeat: repeat-y;
+    background-size: 30px 68px;
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='30'%20height='68'%20viewBox='0%200%2030%2068'%3E%3Cg%20fill='%232f4c86'%3E%3Cellipse%20cx='16'%20cy='16'%20rx='7.5'%20ry='12'/%3E%3Cellipse%20cx='13'%20cy='40'%20rx='6'%20ry='9'/%3E%3C/g%3E%3C/svg%3E");
+  }
+  .leaf-left .leaf-inner::after{ left: 6px; }
+  .leaf-right .leaf-inner::after{ right: 6px; }
+  .leaf-left .leaf-shade{
+    position:absolute;
+    inset:0;
+    box-shadow: inset -14px 0 18px -16px rgba(0,0,0,0.4);
+    pointer-events:none;
+  }
+  .leaf-right .leaf-shade{
+    position:absolute;
+    inset:0;
+    box-shadow: inset 14px 0 18px -16px rgba(0,0,0,0.4);
+    pointer-events:none;
+  }
+
+  /* decorative red ink stamp, like a rubber-stamped notebook corner */
+  .stamp{
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    padding: 9px 12px;
+    border: 2px solid var(--stamp-red);
+    border-radius: 4px;
+    color: var(--stamp-red);
+    font-family: "Noto Serif TC", serif;
+    font-weight: 700;
+    font-size: 1.15em;
+    letter-spacing: 3px;
+    line-height: 1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    white-space: nowrap;
+    transform: rotate(-9deg);
+    opacity: 0.72;
+    mix-blend-mode: multiply;
+    pointer-events:none;
+    z-index: 3;
+  }
+  /* Stamp-impact animation replayed on every page turn. The keyframe's
+     final state matches .stamp's own resting transform/opacity exactly,
+     so the stamp always settles back at the same fixed corner position —
+     it never drifts or slides along with the page-flip animation. */
+  .stamp.stamp-hit{
+    animation: stampSlam .42s cubic-bezier(.2,.9,.3,1);
+  }
+  @keyframes stampSlam{
+    0%{ transform: rotate(-9deg) scale(2.1); opacity: 0; }
+    55%{ transform: rotate(-9deg) scale(0.92); opacity: 0.85; }
+    100%{ transform: rotate(-9deg) scale(1); opacity: 0.72; }
+  }
+
+  .leaf-footer{
+    flex: 0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 12px;
+    padding: 3px 16px;
+    margin-top: 4px;
+    border-top: 1px dashed rgba(255,255,255,0.15);
+  }
+
+  .page{
+    display:none;
+    padding: 30px 42px 34px 50px;
+  }
+  .page.active{ display:block; }
+  .page.active.flip-next{
+    animation: pageInNext .38s ease-out;
+  }
+  .page.active.flip-prev{
+    animation: pageInPrev .38s ease-out;
+  }
+  .cover-half.active.flip-next,
+  .cover-half.active.flip-prev{
+    display: flex;
+  }
+  @keyframes pageInNext{
+    from{ opacity:0; }
+    to{ opacity:1; }
+  }
+  @keyframes pageInPrev{
+    from{ opacity:0; }
+    to{ opacity:1; }
+  }
+
+  /* ---------- Masthead: printed diary letterhead on every entry page ---------- */
+  .masthead{
+    position: relative;
+    display:flex;
+    align-items: baseline;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--stamp-red);
+  }
+  .masthead .brand-badge{
+    font-family: "Noto Serif TC", serif;
+    font-weight: 900;
+    font-size: 1.15em;
+    color: var(--stamp-red);
+    letter-spacing: 3px;
+  }
+  .masthead .brand-date{
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%) rotate(-0.6deg);
+    font-family: "Noto Serif TC", serif;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 1.15em;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .masthead .brand-date::before{ content: "〈"; }
+  .masthead .brand-date::after{ content: "〉"; }
+  .signature{
+    margin-top: 22px;
+    padding-top: 10px;
+    text-align: right;
+    font-family: "Noto Serif TC", serif;
+    font-style: normal;
+    font-size: 0.98em;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .signature .who{
+    display:block;
+    font-weight: 600;
+  }
+  .signature .meta{
+    display:block;
+    font-family: "Noto Serif TC", serif;
+    font-size: 0.68em;
+    color: var(--ink-soft);
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  .page p{
+    margin: 0 0 8px;
+    line-height: 1.6;
+    font-size: 12.5px;
+    font-family: 'Space Mono', monospace;
+    color: var(--pen-blue);
+    font-weight: 500;
+  }
+  /* handwriting jitter: each character gets a tiny random rotation/shift
+     (applied by JS via inline style on .ink-char spans) so the ballpoint
+     text doesn't look machine-typeset */
+  .page p .ink-char{
+    display: inline-block;
+  }
+
+  /* cover spread */
+  .cover-half{
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display:none;
+    padding: 40px 26px;
+    text-align:center;
+    color: var(--ink);
+    background: var(--cover);
+    box-sizing: border-box;
+  }
+  .cover-half.active{ display:flex; flex-direction:column; justify-content:center; }
+  .cover-half .ring{
+    width: 64px; height: 64px;
+    margin: 0 auto 18px;
+    border: 2px solid var(--stamp-red);
+    border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family: "Noto Serif TC", serif;
+    font-size: 1.4em;
+    color: var(--stamp-red);
+  }
+  .cover-half h1{
+    font-family: "Noto Serif TC", serif;
+    font-size: 2.1em;
+    margin: 0 0 8px;
+    color: var(--stamp-red);
+    letter-spacing: 4px;
+  }
+  .cover-half .sub{
+    color: var(--ink-soft);
+    font-size: 0.9em;
+    margin-bottom: 4px;
+  }
+  .cover-half .divider-sm{
+    width: 50px; height:1px; background: var(--accent);
+    margin: 18px auto;
+    opacity:0.6;
+  }
+  .cover-half .meta{
+    font-size: 0.76em; color: var(--ink-soft); line-height: 1.9;
+  }
+  .cover-half.cover-right{
+    color: var(--ink-soft);
+    background: var(--paper);
+  }
+  .cover-half.cover-right .quote-mark{
+    font-family: "Zhi Mang Xing", serif;
+    font-size: 3em;
+    color: var(--paper-line);
+    line-height: 1;
+  }
+  .cover-half.cover-right .hint{
+    font-size: 0.8em;
+    color: var(--ink-soft);
+    letter-spacing: 1px;
+  }
+
+  /* end note (last page) */
+  .end-note{
+    font-size: 0.76em;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    border-top: 1px dashed var(--paper-line);
+    padding-top: 12px;
+    margin-top: 6px;
+  }
+
+  /* ---------- nav controls (inside the notebook) ---------- */
+  .nav-btn{
+    background: var(--accent2);
+    color: #f6f2e4;
+    border: none;
+    padding: 4px 14px;
+    border-radius: 5px;
+    font-family: "Noto Serif TC", serif;
+    font-size: 0.78em;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: transform .12s ease, opacity .12s ease;
+    user-select:none;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .nav-btn:active{ transform: translateY(1px); }
+  .nav-btn:disabled{ opacity:0.35; cursor:default; }
+  .page-indicator{
+    font-size: 0.72em;
+    color: #d8d2c0;
+    letter-spacing: 1px;
+    text-align:center;
+    flex: 1 1 auto;
+  }
+
+  /* ---------- Side index tabs (Post-it style sticky index flags) ---------- */
+  .tab-rail{
+    position: absolute;
+    top: 64px;
+    left: 100%;
+    display:flex;
+    flex-direction:column;
+    align-items: flex-start;
+    z-index: 6;
+  }
+  /* Text is written one character per line (via <br> in the markup) rather
+     than with writing-mode:vertical-rl — several browsers mis-stack/overlap
+     multi-character CJK runs in true vertical writing mode, so a manual
+     stack of single-character lines is the reliable way to get the same
+     "read top-to-bottom" look. */
+  .tab{
+    position: relative;
+    font-family: "Noto Serif TC", serif;
+    font-weight: 700;
+    font-size: 0.86em;
+    line-height: 1.4;
+    letter-spacing: 1px;
+    color: #fff;
+    background: var(--accent2);
+    border: none;
+    border-right: 3px solid rgba(0,0,0,0.16);
+    width: 34px;
+    padding: 12px 0;
+    margin-bottom: 10px;
+    margin-left: -10px;
+    border-radius: 2px 7px 7px 2px;
+    display: block;
+    text-align: center;
+    box-shadow: 2px 3px 6px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.25);
+    cursor: pointer;
+    white-space: normal;
+    transition: transform .16s ease, box-shadow .16s ease, margin-left .16s ease, z-index 0s;
+  }
+  .tab:hover{ transform: translateX(4px); }
+  .tab.active{
+    transform: translateX(9px);
+    box-shadow: 3px 5px 11px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+    z-index: 2;
+  }
+  .tab[data-color="cover"]{ background: var(--cover-dark); }
+  .tab[data-color="a"]{ background: var(--accent); }
+  .tab[data-color="b"]{ background: var(--accent2); }
+  .tab[data-color="c"]{ background: var(--rust); }
+  .tab[data-color="d"]{ background: #4a6f8a; }
+  .tab[data-color="e"]{ background: #7a5a8a; }
+
+  @media (max-width: 760px){
+    .stage{ flex-direction: column-reverse; align-items: center; }
+    .tab-rail{
+      position: static;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 6px;
+      max-width: 94vw;
+    }
+    .tab{
+      width: auto;
+      padding: 7px 14px;
+      margin-bottom: 0;
+      margin-left: 0;
+      border-right: none;
+      border-radius: 4px;
+      letter-spacing: 1px;
+      font-size: 0.72em;
+    }
+    .tab br{ display: none; }
+    .tab:hover{ transform: translateY(-2px); }
+    .tab.active{ transform: translateY(-2px); }
+  }
+
+  @media (max-width: 560px){
+    /* single-page mode: only the current side (left or right) of the
+       notebook is shown at a time, sized to fill the available space,
+       rather than stacking both halves. See the script's narrowSide
+       stepping logic below. */
+    .spread{ flex-direction: column; }
+    .leaf{
+      /* Column-direction flex here makes "height" the main-axis size,
+         which flex:1 1 0 (flex-basis:0) would otherwise ignore — pin the
+         basis to auto so this explicit height actually takes effect
+         (needed now that .cover-half is out-of-flow and no longer gives
+         the leaf any intrinsic content height to grow from). */
+      flex: 0 0 auto;
+      height: min(620px, 74vh);
+    }
+    .leaf-left, .leaf-right{ border-radius: 8px; }
+    .leaf:not(:has(.page.active)){ display: none; }
+    .spine-center{ display: none; }
+    .page{ padding: 22px 18px 26px 36px; }
+    .leaf-inner::before{ left: 26px; }
+    .cover-half h1{ font-size: 1.7em; }
+    .masthead .brand-date{ font-size: 0.8em; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="stage">
+  <div class="book" id="book">
+    <div class="spread">
+
+      <!-- LEFT PAGE -->
+      <div class="leaf leaf-left">
+        <div class="leaf-content"><div class="leaf-inner">
+
+          <!-- COVER LEFT -->
+          <div class="cover-half page active" data-idx="0">
+            <div class="ring">役</div>
+            <h1>役男日記</h1>
+            <div class="sub">事件簿</div>
+            <div class="divider-sm"></div>
+          </div>
+
+          <!-- 1L: 打靶 -->
+          <div class="page page-left" data-idx="1">
+            <div class="masthead"><span class="brand-badge">軍旅手記</span><span class="brand-date">打靶</span></div>
+            <p>那時候是寒流，然後下超級大雨。我們靶場要走超級遠，還要爬山到山上的靶場去打，所以基本上走在路上，全身就濕了。雖然我們有穿雨衣，但還是會濕，鞋子什麼也都會濕。</p>
+            <p>打靶的地是紅土，一下雨，紅土就直接變成一坨紅色的泥水。我們就是直接趴在紅土上拿步槍射，所以等於整個人都泡在水裡。射擊的地方又是全露天的，槍會直接架在地上，泡水又淋雨。不管是扳機還是其他地方，都可能沾到土或水，然後卡住、射不出來；覘孔也可能因為有水，沒有辦法瞄準。</p>
+            <p>我們一百四十四個人要打。那時候到底帶了多少把步槍上去，我現在有點忘記了，可能三十幾把，也可能更多。反正打到七十幾號的時候，就發現槍都壞掉了。</p>
+            <p>槍壞掉就沒辦法打，所以剩下七十幾號到一百四十四號的人，就都坐在那邊，等我們打完之後再一起下山。</p>
+            <p>那邊有一個類似風雨球場的遮雨棚，可是風很冷、雨很大，還是會一直吹進來、淋到身上。</p>
+          </div>
+
+          <!-- 2L: 廢鐵 -->
+          <div class="page page-left" data-idx="2">
+            <div class="masthead"><span class="brand-badge">軍旅手記</span><span class="brand-date">廢鐵</span></div>
+            <p>營區的空間是固定的，但人會流動，所以可能幾年前留下來一些廢物，例如床架、連上的洗衣機，或各種雜物。這些東西本來應該要淘汰掉，但那時候就被丟在營區樹林裡面的某個地方。我不知道為什麼會被丟在那邊。</p>
+            <p>後來應該是被上面的長官知道，說東西不能丟在這裡，要丟到回收場，所以就要我們把那些東西搬到回收場。那時候很急，因為長官會定期來巡，所以操課操到一半，就叫我們三個班、幾十個人去搬東西。</p>
+            <p>結果到那邊才發現是一堆廢鐵，而且都已經生鏽了。我就問有沒有手套可以用，我說，不然這些東西生鏽，可能會有破傷風的問題。結果長官就說：「你就先搬，盡量不要受傷就好。」</p>
+            <p>我那時候就想說，三小，要不要受傷又不是我能控制的。因為他們平常很愛講，說我們最重視大家的安全，有問題一定要說，不要勉強。</p>
+          </div>
+
+          <!-- 3L: 內務 -->
+          <div class="page page-left" data-idx="3">
+            <div class="masthead"><span class="brand-badge">軍旅手記</span><span class="brand-date">內務</span></div>
+            <p>我有問長官為什麼要做內務，他們說「上面的長官會看。」</p>
+            <p>有一個長官還說什麼：「麥克阿瑟說『整理內務是一切的前提』」。反正我覺得他們自己就是服從這個規則，但也沒有真的很理解為什麼要做這件事情。如果我們內務沒做好，他們就會被上面的長官盯，會覺得我們部隊沒有紀律。</p>
+            <p>內務基本上會幫你打分數，比如棉被會有一個分數，你的蚊帳會有一個分數，鋼盆怎麼擺會有一個分數，內務櫃裡面衣服怎麼掛會有一個分數，鋼盔、S腰帶怎麼擺也會有一個分數。理論上如果你沒有到一個分數，就不能放假。</p>
+            <p>但我們連上的長官平常其實也懶得打這些分數。後來有一天，他應該是突然收到通知說會有長官來，來不及幫我們打分數，所以就直接自己手寫，隨便寫分數，再貼在報告欄上面給長官看。</p>
+          </div>
+
+          <!-- 4L: 氣喘 -->
+          <div class="page page-left" data-idx="4">
+            <div class="masthead"><span class="brand-badge">軍旅手記</span><span class="brand-date">氣喘</span></div>
+            <p>當天早上我們班去倒垃圾，所以並沒有現場聽到班長及其他鄰兵的說法，大多是聽隔壁班中午簡短轉述後，下午班長便花了將近兩小時的時間試圖跟全連說明早上上課發生的事情，聽取各方說詞後，事件大致如下。</p>
+            <p>早上多數班級全副武裝前往單戰場操課（步行時間大約 15-20 分鐘），因當天連上幹部多有其他任務，所以僅有一位值星班長帶領全連剩餘入伍生前往（通常會有兩位班長），操課結束後，其中一位入伍生向班長反映他身體不適，因此僅能緩慢步行回連上（該生先前有氣喘紀錄，前幾週運動後或走樓梯後須使用氣喘噴劑），此時班長提出讓該生走在部隊最前面，並對部隊剩餘入伍生說明，部隊休息時間取決於該生步速。</p>
+            <p>因曾經見過該生使用氣喘噴劑情況，全連入伍生皆知曉該生患有氣喘，所以一個與該生素不相識的入伍生替該生說話，當眾質疑班長作法，並與班長爭執。回到連上後，該生於寢室哭泣。</p>
+            <p>班長知道多數入伍生對其做法頗有意見，於是在下午集合後向全體入伍生解釋，其立論主要有三：</p>
+          </div>
+
+          <!-- 5L: 湯匙 -->
+          <div class="page page-left" data-idx="5">
+            <div class="masthead"><span class="brand-badge">軍旅手記</span><span class="brand-date">湯匙</span></div>
+            <p>突然又想到，其實還有一個比較小的事情，大概是我有個鄰兵吃素，但因為各桌只會有一個湯匙同時撈滷汁（有時會有肉沫、雞絲等料）、鹹湯（通常是葷的）及甜湯，所以吃素的鄰兵很容易喝到有肉殘留的甜湯。</p>
+            <p>後來是我們去跟打飯班多拿一個湯匙解決這個問題，但後來被營長看到，說不能有兩個湯匙（打飯班有幫忙解釋是因為有吃素的鄰兵），所以就被收回了。後來我們的做法是，有長官來的時候再收起來，但其實也就那次被營長盯到，後面就沒了。</p>
+            <div class="signature">
+              <span class="who">小瓜</span>
+              <span class="meta">成功嶺・現役</span>
+            </div>
+          </div>
+
+        </div></div>
+        <div class="leaf-shade"></div>
+        <div class="stamp">初閱</div>
+      </div>
+
+      <!-- CENTER SPINE -->
+      <div class="spine-center"></div>
+
+      <!-- RIGHT PAGE -->
+      <div class="leaf leaf-right">
+        <div class="leaf-content"><div class="leaf-inner">
+
+          <!-- COVER RIGHT -->
+          <div class="cover-half cover-right page active" data-idx="0">
+            <div class="quote-mark">"</div>
+            <div class="hint">真人真事，沒有改編<br>整理自訪談逐字稿</div>
+          </div>
+
+          <!-- 1R: 打靶 -->
+          <div class="page page-right" data-idx="1">
+            <p>我們每個人都是全副武裝，防彈背心也全濕，整個身體都有點泡水，然後風一直吹。</p>
+            <p>後來營長有上來說，大家辛苦，知道大家很冷，也說晚上會幫大家煮薑湯或什麼，但還是要繼續打。我覺得他沒有想要解決我們當下的問題。那時候已經冷到會感冒（的程度）了，我覺得這已經變成一個健康的問題，但我的健康沒有被重視。</p>
+            <p>我覺得寒流打靶不能說它錯，因為打仗的時候可能也會有寒流，你可能還是要上戰場。我最不爽的是，有一半的人最後根本沒有打到。大家已經冷成這樣，槍也壞掉了，還是只能待在那邊等。</p>
+            <p>他們可能一定要把靶打完，是因為上面長官規定子彈數一定要消耗多少，或者每個人一定都要打過幾次，才能鑑測之類的。這些我不確定。但我那時候就是覺得很浪費時間，也很不爽，因為這已經變成一個健康問題，可是我的健康沒有被重視。</p>
+            <div class="signature">
+              <span class="who">劉宥廷</span>
+              <span class="meta">206關西營區・2025.12.17結訓</span>
+            </div>
+          </div>
+
+          <!-- 2R: 廢鐵 -->
+          <div class="page page-right" data-idx="2">
+            <p>他們其實也很怕我們受傷或生病，因為對他們來說很麻煩。有人生病，就要派人送去醫院，他們根本沒有那個人力；受傷可能也要回報。</p>
+            <p>所以我就覺得很白痴。我們被叫去收這個爛攤子，他也沒有想要保護我們的意思，就只是想應付長官、把事情做完。我們就是被當工具人嘛，他要你幹嘛你就幹嘛，你也沒有決定的權利。</p>
+            <p>但我必須老實講，長官的個性其實都蠻好的，他們都是好人。我覺得他們也很為難，這是一個體系、體制的問題。他們也不是想要為難我們，他們自己可能也覺得做這些事情沒有意義，但他們就會說，這就是一個工作，就是要做。</p>
+            <p>所以我們反映的時候，他們通常也是很無奈，就說：「就這樣，我也不知道為什麼，反正就這樣，做就對了。」然後可能說，你們做完就讓你們多休息久一點，或讓你們抽一根菸、帶你們去福利站買個東西。</p>
+            <div class="signature">
+              <span class="who">劉宥廷</span>
+              <span class="meta">206關西營區・2025.12.17結訓</span>
+            </div>
+          </div>
+
+          <!-- 3R: 內務 -->
+          <div class="page page-right" data-idx="3">
+            <p>我們下課回走廊看到的時候，就想說：「幹，怎麼被打分數了？」結果發現一堆人的分數都很低。我們就會很緊張，因為分數很低可能就不能放假，但我們也不知道自己到底哪裡做得不好、哪裡做錯。而且有些長官說牙刷要靠左邊，有些說要靠右邊，他們自己也搞不清楚。</p>
+            <p>那時候就超莫名其妙。後來我們一直問班長：「這個到底是怎麼樣？」因為我們根本不知道自己哪裡做不好。後來他才跟大家說，因為有長官會來看，所以那個分數是他自己寫給長官看的，沒有代表什麼意義。</p>
+            <p>我們就超不爽，因為等於弄得雞飛狗跳。大家都以為自己明明有做好，卻又被認為沒做好，結果後來才發現，他只是為了應付長官。我就覺得這件事情很白痴。</p>
+            <div class="signature">
+              <span class="who">劉宥廷</span>
+              <span class="meta">206關西營區・2025.12.17結訓</span>
+            </div>
+          </div>
+
+          <!-- 4R: 氣喘 -->
+          <div class="page page-right" data-idx="4">
+            <p>一、所有入伍生在入營前後皆經過醫院及軍醫評估，若身體狀況無法完成軍中測驗則當時便會轉往補充兵。另自己有十年帶兵經驗，照先前經驗，該生應該可完成當次路程（中間一度出現該班長疑似不知該生有氣喘，不過這屬於前任值星班長是否有完整交接問題，為另一可討論問題）。二、軍中為團體生活，不會拋下弱者。此次要求該入伍生走在部隊前方為測試，希望了解他的極限在哪裡。班長同時提到三信心（信長官、信同袍、信下屬），表示所有入伍生向他反映身體不適者，他都完全相信（不太確定他此時拋出這個說法的用意，畢竟聽起來像是他有些質疑該生身體不適之真實性）。三、該生未主動跟班長說無法行走，僅說可以慢慢走回營上。若入伍生有身體不適而不能操課，應自己提出，而非其他入伍生代為要求。</p>
+            <p>班長後來私下跟該入伍生道歉，接下來一周值星也未再有類似情況發生。</p>
+            <div class="signature">
+              <span class="who">小瓜</span>
+              <span class="meta">成功嶺・現役</span>
+            </div>
+          </div>
+
+          <!-- 5R: 湯匙 (blank facing page, content fits entirely on the left) -->
+          <div class="page page-right-blank" data-idx="5"></div>
+
+        </div></div>
+        <div class="leaf-shade"></div>
+      </div>
+
+    </div>
+
+    <div class="leaf-footer">
+      <button class="nav-btn" id="prevBtn">◀ 上一頁</button>
+      <div class="page-indicator" id="pageIndicator">0 / 5</div>
+      <button class="nav-btn" id="nextBtn">下一頁 ▶</button>
+    </div>
+
+    <div class="tab-rail" id="tabRail"></div>
+  </div>
+  </div>
+
+<script>
+  const titles = [
+    "封面",
+    "打靶",
+    "廢鐵",
+    "內務",
+    "氣喘",
+    "湯匙"
+  ];
+
+  // side index tabs: one tab per spread
+  const groups = [
+    { label: "封面", start: 0, end: 0, color: "cover" },
+    { label: "打靶", start: 1, end: 1, color: "a" },
+    { label: "廢鐵", start: 2, end: 2, color: "b" },
+    { label: "內務", start: 3, end: 3, color: "c" },
+    { label: "氣喘", start: 4, end: 4, color: "d" },
+    { label: "湯匙", start: 5, end: 5, color: "e" }
+  ];
+
+  // every spread index has up to two DOM halves (left + right) sharing data-idx
+  const allHalves = Array.from(document.querySelectorAll('.page'));
+  const spreadCount = groups.length; // 0..5
+  let current = 0;
+  const total = spreadCount - 1;
+
+  // On narrow screens the notebook shows a single page at a time instead
+  // of a left+right spread. narrowSide tracks which half of the current
+  // spread is on screen in that mode ('L' or 'R'); idx 5 has no right-side
+  // content (blank facing page) so it never advances past 'L'.
+  let narrowSide = 'L';
+  const narrowQuery = window.matchMedia('(max-width: 560px)');
+  const isNarrow = () => narrowQuery.matches;
+  const sideOf = (el) => (
+    el.classList.contains('page-right') ||
+    el.classList.contains('page-right-blank') ||
+    el.classList.contains('cover-right')
+  ) ? 'R' : 'L';
+
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const indicator = document.getElementById('pageIndicator');
+  const tabRail = document.getElementById('tabRail');
+  const leafContents = Array.from(document.querySelectorAll('.leaf-content'));
+
+  // Each label is laid out one character per line (rather than with
+  // writing-mode:vertical-rl) since several browsers mis-stack/overlap
+  // multi-character CJK runs in true vertical writing mode.
+  const tabEls = groups.map(g => {
+    const btn = document.createElement('div');
+    btn.className = 'tab';
+    btn.dataset.color = g.color;
+    btn.innerHTML = g.label.split('').join('<br>');
+    btn.title = titles[g.start];
+    btn.setAttribute('role', 'button');
+    btn.setAttribute('tabindex', '0');
+    btn.addEventListener('click', () => goTo(g.start));
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goTo(g.start); }
+    });
+    tabRail.appendChild(btn);
+    return btn;
+  });
+
+  function render(direction){
+    const narrow = isNarrow();
+    allHalves.forEach(half => {
+      const idx = Number(half.dataset.idx);
+      const isActive = narrow
+        ? (idx === current && sideOf(half) === narrowSide)
+        : (idx === current);
+      half.classList.toggle('active', isActive);
+      half.classList.remove('flip-next', 'flip-prev');
+      if (isActive && direction){
+        void half.offsetWidth; // force reflow so animation retriggers
+        half.classList.add(direction === 'next' ? 'flip-next' : 'flip-prev');
+      }
+    });
+    if (narrow){
+      prevBtn.disabled = current === 0 && narrowSide === 'L';
+      nextBtn.disabled = current === spreadCount - 1; // idx 5's right side is blank
+    } else {
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === spreadCount - 1;
+    }
+    indicator.textContent = `${current} / ${total}`;
+
+    groups.forEach((g, i) => {
+      tabEls[i].classList.toggle('active', current >= g.start && current <= g.end);
+    });
+
+    leafContents.forEach(lc => lc.scrollTop = 0);
+
+    // Replay the stamp-impact animation on every page turn. The stamp
+    // element itself never moves — only its own scale/opacity animate —
+    // so it always lands back in the same fixed corner of the page.
+    const stampEl = document.querySelector('.stamp');
+    if (stampEl){
+      stampEl.classList.remove('stamp-hit');
+      void stampEl.offsetWidth; // force reflow so the animation retriggers
+      stampEl.classList.add('stamp-hit');
+    }
+  }
+
+  function goTo(i){
+    const target = Math.max(0, Math.min(spreadCount - 1, i));
+    const changed = target !== current || (isNarrow() && narrowSide !== 'L');
+    if (!changed) return;
+    const direction = target === current ? null : (target > current ? 'next' : 'prev');
+    current = target;
+    narrowSide = 'L';
+    render(direction);
+  }
+
+  // In wide (spread) mode, next/prev step through whole spreads as before.
+  // In narrow (single-page) mode, they step through each half individually
+  // (left, then right, then the next spread's left, ...); idx 5 has no
+  // right-side content so it's the final step.
+  function stepNext(){
+    if (!isNarrow()){ goTo(current + 1); return; }
+    if (narrowSide === 'L' && current !== spreadCount - 1){
+      narrowSide = 'R';
+      render('next');
+      return;
+    }
+    if (current < spreadCount - 1){
+      current += 1;
+      narrowSide = 'L';
+      render('next');
+    }
+  }
+
+  function stepPrev(){
+    if (!isNarrow()){ goTo(current - 1); return; }
+    if (narrowSide === 'R'){
+      narrowSide = 'L';
+      render('prev');
+      return;
+    }
+    if (current > 0){
+      current -= 1;
+      narrowSide = (current === spreadCount - 1) ? 'L' : 'R';
+      render('prev');
+    }
+  }
+
+  prevBtn.addEventListener('click', stepPrev);
+  nextBtn.addEventListener('click', stepNext);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') stepNext();
+    if (e.key === 'ArrowLeft') stepPrev();
+  });
+
+  // Re-render (no animation) whenever we cross the narrow/wide breakpoint,
+  // so the correct single page or full spread is shown immediately.
+  narrowQuery.addEventListener('change', () => render());
+
+  // Ballpoint-pen handwriting effect: wrap every character of each diary
+  // paragraph in its own span with a small random rotation/vertical shift,
+  // so the "ink" reads as handwritten rather than machine-typeset. Runs
+  // once on load since the diary text itself never changes.
+  (function jitterHandwriting(){
+    document.querySelectorAll('.page p').forEach(p => {
+      const text = p.textContent;
+      p.textContent = '';
+      for (const ch of text){
+        if (ch.trim() === ''){
+          p.appendChild(document.createTextNode(ch));
+          continue;
+        }
+        const span = document.createElement('span');
+        span.className = 'ink-char';
+        span.textContent = ch;
+        const rot = 0;
+        const dy = 0;
+        span.style.transform = `rotate(${rot}deg) translateY(${dy}px)`;
+        p.appendChild(span);
+      }
+    });
+  })();
+
+  render();
+</script>
+
+</body>
+</html>

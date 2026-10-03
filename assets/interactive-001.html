@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>洪案現場：記者模擬器</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=Space+Mono:wght@400;700&display=swap');
+
+:root{
+  --paper:#F7F5EF;
+  --paper2:#EDEAE0;
+  --paper3:#E8E3D3;
+  --ink:#292A28;
+  --ink-soft:#5b5c53;
+  --ink-faint:#a6a092;
+  --line:#292A28;
+  --line-soft:rgba(41,42,40,.24);
+  --brick:#7A2A28;
+  --brick-soft:#a65248;
+  --brass:#A9803F;
+  --mustard:#E9DDB8;
+  --olive:#4B5240;
+  --ink-blue:#2f4f66;
+  --cred:#2f4f66;
+  --speed:#A9803F;
+  --acc:#7A2A28;
+  --stam:#4B5240;
+  --good:#4B5240;
+  --font-display:'Noto Serif TC', serif;
+  --font-body:'Noto Sans TC', sans-serif;
+  --font-mono:'Space Mono', monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;width:100%;height:100%;}
+body{
+  font-family:var(--font-body);
+  color:var(--ink);
+  background:
+    radial-gradient(circle at top right, rgba(122,42,40,.06), transparent 40%),
+    var(--paper);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; opacity:.55; z-index:0;
+  background-image:radial-gradient(rgba(41,42,40,.14) .7px, transparent .9px);
+  background-size:4px 4px;
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+}
+#alarmOverlay{position:fixed;inset:0;pointer-events:none;z-index:80;box-shadow: inset 0 0 0 0 rgba(122,42,40,0);}
+#alarmOverlay.critical{animation: alarmPulse 1.2s ease-in-out infinite;}
+@keyframes alarmPulse{0%,100%{box-shadow: inset 0 0 36px 7px rgba(122,42,40,.18);}50%{box-shadow: inset 0 0 92px 20px rgba(122,42,40,.32);}}
+#alarmOverlay.flash{animation: alarmFlash .45s ease-out 2;}
+@keyframes alarmFlash{0%{background:rgba(122,42,40,0);}35%{background:rgba(122,42,40,.18);}100%{background:rgba(122,42,40,0);}}
+#app.shake{animation: shakeAnim .4s ease;}
+@keyframes shakeAnim{0%,100%{transform:translate(0,0);}20%{transform:translate(-4px,2px);}40%{transform:translate(4px,-2px);}60%{transform:translate(-3px,2px);}80%{transform:translate(3px,-2px);}}
+
+.ticker-bar{
+  flex:0 0 auto; height:32px; background:var(--ink); border-bottom:3px solid var(--ink); position:relative; z-index:2; overflow:hidden;
+}
+.ticker-live{
+  position:absolute; left:8px; top:50%; transform:translateY(-50%); z-index:4;
+  display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono);
+  font-size:9px; font-weight:700; letter-spacing:.08em; background:var(--brick); color:var(--paper); padding:3px 8px;
+}
+.ticker-live::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--paper);}
+.ticker-window{position:absolute; left:92px; right:16px; top:0; bottom:0; overflow:hidden; display:flex; align-items:center;}
+.ticker-track{display:inline-block; white-space:nowrap; width:max-content; max-width:none; font-family:var(--font-mono); font-size:9px; color:var(--paper3); letter-spacing:.02em; padding-left:100%; animation:ticker 34s linear infinite; line-height:1;}
+@keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-100%);}}
+.ticker-track b{color:var(--mustard);}
+
+#app{flex:1;min-height:0;display:flex;flex-direction:column;position:relative;z-index:1;}
+.screen{display:none;flex:1;min-height:0;overflow:hidden;padding:5px;}
+.screen.active{display:flex;align-items:flex-start;justify-content:flex-start;}
+.screen-fit{width:100%;transform-origin:top center;}
+.shell{display:flex;flex-direction:column;gap:6px;}
+
+.topbar{
+  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:10px;
+  padding:7px 10px; background:var(--paper); border:3px solid var(--ink);
+}
+.topbar.compact-head{grid-template-columns:auto 1fr;}
+.topbar.compact-head .brand-title{font-size:18px;}
+.topbar.compact-head .brand-sub{font-size:9px; letter-spacing:.11em;}
+.brand-badge{background:var(--brick);color:var(--paper);font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.08em;padding:4px 7px;text-transform:uppercase;}
+.brand-block{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.brand-title{font-family:var(--font-display);font-size:16px;font-weight:700;line-height:1.05;}
+.brand-sub{font-family:var(--font-mono);font-size:8.5px;color:var(--ink-soft);letter-spacing:.1em;text-transform:uppercase;}
+.top-meta{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.chip{border:2px solid var(--ink);font-family:var(--font-mono);font-size:8.5px;color:var(--ink);padding:3px 6px;letter-spacing:.08em;text-transform:uppercase;background:var(--paper);border-radius:5px;}
+.chip.hot{color:var(--paper);border-color:var(--brick);background:var(--brick);}
+
+.panel{background:var(--paper); border:3px solid var(--ink); position:relative; border-radius:10px;}
+
+/* title */
+.hero-grid,.end-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:6px;}
+.hero-main,.hero-side,.end-main,.end-side{padding:12px;position:relative;overflow:hidden;}
+.hero-main::before,.end-main::before{content:"特別報導";position:absolute;right:10px;top:8px;font-family:var(--font-mono);font-size:8px;color:rgba(41,42,40,.14);letter-spacing:.16em;}
+.kicker{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--brick);text-transform:uppercase;margin-bottom:7px;}
+.kicker::before{content:"";width:7px;height:7px;background:var(--brick);}
+h1{margin:0 0 9px;font-family:var(--font-display);font-size:clamp(26px,4.5vw,38px);font-weight:900;line-height:1.08;}
+.dek{margin:0 0 8px;font-size:12px;line-height:1.58;color:var(--ink-soft);}
+.byline{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line-soft);font-family:var(--font-mono);font-size:9px;color:var(--ink-faint);}
+.side-title{margin:0 0 8px;font-family:var(--font-mono);font-size:9px;color:var(--brick);letter-spacing:.12em;text-transform:uppercase;}
+.rules{display:grid;gap:7px;}
+.rule{display:grid;grid-template-columns:22px 1fr;gap:7px;align-items:start;padding-top:7px;border-top:1px dashed var(--line-soft);}
+.rule:first-child{padding-top:0;border-top:none;}
+.rule-num{width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:var(--mustard);border:2px solid var(--ink);font-family:var(--font-mono);font-size:9px;color:var(--ink);font-weight:700;border-radius:6px;}
+.rule-body b{display:block;font-size:11px;margin-bottom:2px;}
+.rule-body span{font-size:10px;color:var(--ink-soft);line-height:1.38;}
+.cta{font-family:var(--font-body);font-weight:800;font-size:12px;background:var(--ink);color:var(--paper);border:2px solid var(--ink);padding:10px 16px;cursor:pointer;margin-top:10px;border-radius:8px;transition:background .15s ease,color .15s ease,transform .12s ease;}
+.cta:hover{background:var(--brick);border-color:var(--brick);transform:translate(-1px,-1px);}
+.side-note{margin-top:8px;font-size:9.8px;color:var(--ink-faint);line-height:1.42;}
+
+/* game layout */
+.game-shell{height:100%;}
+.dashboard{display:grid;grid-template-rows:auto 1fr auto;gap:6px;flex:1;min-height:0;}
+.stat-strip{padding:7px 12px;display:grid;grid-template-columns:1fr;gap:4px;align-items:stretch;}
+.stat-strip-title{display:none;}
+.stat-kicker{font-family:var(--font-mono);font-size:8.5px;color:var(--brick);letter-spacing:.14em;text-transform:uppercase;}
+.stat-headline{font-family:var(--font-display);font-size:16px;line-height:1.05;}
+.stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px;}
+.stat-card{display:grid;grid-template-columns:78px 1fr 28px;gap:8px;align-items:center;min-width:0;padding:0;}
+.stat-name{min-width:0;}
+.stat-name b{display:block;font-size:11px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-mono);letter-spacing:.02em;}
+.stat-name span{display:none;}
+.stat-track{height:8px;background:var(--paper2);position:relative;min-width:0;border:2px solid var(--ink);border-radius:4px;overflow:hidden;
+  background-image:repeating-linear-gradient(90deg, transparent 0 9%, rgba(41,42,40,.28) 9% 10%);
+}
+.stat-fill{position:absolute;left:0;top:0;bottom:0;width:100%;transition:width .5s cubic-bezier(.4,0,.2,1), background .3s;}
+.stat-value{font-family:var(--font-mono);font-size:10px;color:var(--ink);min-width:28px;text-align:right;font-weight:700;}
+#fill-c{background:var(--cred);} #fill-s{background:var(--speed);} #fill-a{background:var(--acc);} #fill-st{background:var(--stam);}
+.stat-card.warning .stat-name b{color:var(--brick);} .stat-card.dead .stat-fill{opacity:.18;}
+
+.workspace{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-height:0;}
+.story-card,.decision-card{padding:12px;display:flex;flex-direction:column;min-height:0;}
+.story-card{justify-content:flex-start;}
+.story-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.story-tag{background:var(--brick);color:var(--paper);font-family:var(--font-mono);font-size:8.5px;font-weight:700;letter-spacing:.08em;padding:3px 6px;text-transform:uppercase;}
+.story-meta{font-family:var(--font-mono);font-size:8.5px;color:var(--ink-faint);letter-spacing:.06em;min-width:0;}
+#roundTitle{font-family:var(--font-display);font-size:clamp(22px,3.2vw,28px);font-weight:700;line-height:1.14;margin:0 0 10px;}
+#roundText{font-size:12.8px;line-height:1.68;color:var(--ink-soft);margin:0;white-space:pre-line;}
+.story-foot{margin-top:auto;padding-top:8px;border-top:1px dashed var(--line-soft);font-family:var(--font-mono);font-size:8.5px;color:var(--ink-faint);letter-spacing:.06em;display:flex;justify-content:space-between;gap:8px;}
+.decision-head{display:flex;justify-content:flex-start;gap:8px;align-items:center;margin-bottom:12px;}
+.decision-title{font-family:var(--font-body);font-size:14px;font-weight:800;color:var(--brick);letter-spacing:.02em;}
+.decision-note{display:none;}
+.choices{display:flex;flex-direction:column;gap:8px;justify-content:center;flex:1;}
+.choice-btn{position:relative;text-align:left;background:var(--paper);border:2px solid var(--ink);color:var(--ink);font-family:var(--font-body);font-size:12px;line-height:1.42;padding:12px 12px 12px 40px;cursor:pointer;transition:border-color .15s, transform .1s, background .15s;border-radius:8px;}
+.choice-btn::before{content:attr(data-label);position:absolute;left:10px;top:11px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:2px solid var(--ink);background:var(--mustard);color:var(--ink);font-family:var(--font-mono);font-size:8.5px;font-weight:700;border-radius:5px;}
+.choice-btn:hover{border-color:var(--brick);background:var(--paper2);transform:translate(-2px,-2px);}
+.choice-btn:active{transform:scale(.995);} .choice-btn:focus-visible{outline:3px solid var(--ink-blue);outline-offset:1px;} .choice-btn:disabled{opacity:.46;cursor:default;}
+.response-bar{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 12px;min-height:78px;}
+.feedback{display:none;margin:0;color:var(--ink);font-size:11.2px;line-height:1.58;}
+.feedback.show{display:block;}
+.feedback-label{display:block;font-family:var(--font-body);font-size:14px;font-weight:800;color:var(--brick);letter-spacing:.02em;margin-bottom:6px;}
+.next-btn{font-family:var(--font-body);font-weight:700;font-size:11px;background:var(--ink);color:var(--paper);border:2px solid var(--ink);padding:10px 14px;cursor:pointer;display:none;white-space:nowrap;border-radius:8px;}
+.next-btn.show{display:inline-block;}
+.next-btn:hover{background:var(--brick);border-color:var(--brick);}
+
+/* end */
+.end-kicker{font-family:var(--font-mono);font-size:9px;color:var(--brick);letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px;}
+#end-title{font-family:var(--font-display);font-size:clamp(24px,4vw,31px);font-weight:900;line-height:1.08;margin:0 0 9px;}
+#end-text{font-size:12px;line-height:1.62;color:var(--ink-soft);margin:0;}
+.stat-recap{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px;}
+.stat-recap div{background:var(--paper2);border:2px solid var(--ink);padding:8px;font-family:var(--font-mono);font-size:10.5px;border-radius:6px;}
+.stat-recap div span{display:block;font-size:8px;color:var(--ink-faint);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;}
+#epilogue{padding:10px 11px;background:var(--mustard);border-left:4px solid var(--brick);font-size:10.5px;line-height:1.52;color:var(--ink);}
+#epilogue b{color:var(--brick);}
+
+.no-signal{display:none;}
+
+.intro-panel{max-width:100%;height:100%;padding:18px 24px;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden;}
+#title-screen .shell{height:100%;}
+#title-screen .kicker{margin-bottom:10px;font-size:11px;}
+#title-screen h1{margin:0 0 14px;font-size:clamp(28px,4.6vw,50px);line-height:1.04;max-width:760px;}
+#title-screen .dek{max-width:920px;font-size:12.8px;line-height:1.5;margin:0 0 8px;}
+.intro-label{font-family:var(--font-body);font-size:14px;font-weight:800;color:var(--brick);letter-spacing:.02em;margin:6px 0 8px;}
+.intro-rule{max-width:920px;font-size:12.8px;line-height:1.5;color:var(--ink-soft);margin:0;}
+.intro-actions{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin-top:auto;padding-top:14px;}
+.intro-actions .cta{margin-top:0;font-size:15px;padding:11px 20px;}
+@media (max-width:580px){
+  .hero-grid,.end-grid,.workspace{grid-template-columns:1fr;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .response-bar{grid-template-columns:1fr;align-items:start;}
+  .intro-panel{padding:16px 14px;height:100%;}
+  #title-screen h1{font-size:clamp(28px,8.2vw,40px);}
+  #title-screen .dek{font-size:12.6px;line-height:1.5;}
+  .intro-label{font-size:13px;}
+  .intro-rule{font-size:12.6px;line-height:1.5;}
+  .intro-actions{gap:10px;}
+  .intro-actions .cta{font-size:14px;padding:10px 16px;}
+}
+
+</style>
+</head>
+<body>
+<div id="alarmOverlay"></div>
+<div class="ticker-bar"><span class="ticker-live">LIVE</span><div class="ticker-window"><div class="ticker-track" id="tickerTrack"></div></div></div>
+<div id="app">
+  <section id="title-screen" class="screen active">
+    <div class="screen-fit shell">
+      <div class="panel intro-panel">
+        <div class="kicker">洪仲丘案 · 地方線採訪現場</div>
+        <h1>你是記者，<br>也是一場新聞競賽中的參與者</h1>
+        <div class="intro-label">遊戲說明</div>
+        <p class="dek">從天成醫院急診室外，到軍營拒絕放行的大門；從軍檢外整夜蹲點，到凱道上的白衫軍——你是駐地桃園的地方記者，接下來八個選擇，都來自這場新聞風暴的真實困境。</p>
+        <p class="dek">沒有一個決定是乾淨的。你只能在時效、查證、人脈與身體之間，決定自己願意拿什麼去交換。</p>
+        <div class="intro-label">遊戲規則</div>
+        <p class="intro-rule">任一指標歸零，採訪就會中止。指標進入警戒線時，畫面會開始閃紅與震動——那不是特效，是新聞現場的代價。</p>
+        <div class="intro-actions">
+          <button id="startBtn" class="cta">開始蹲點</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="game-screen" class="screen">
+    <div class="screen-fit shell game-shell">
+      <div class="dashboard">
+        <div class="panel stat-strip">
+          
+          <div class="stats-grid">
+            <div class="stat-card" id="monitor-c"><div class="stat-name"><b>公信力</b></div><div class="stat-track"><div class="stat-fill" id="fill-c"></div></div><div class="stat-value" id="readout-c">100</div></div>
+            <div class="stat-card" id="monitor-s"><div class="stat-name"><b>時效</b></div><div class="stat-track"><div class="stat-fill" id="fill-s"></div></div><div class="stat-value" id="readout-s">100</div></div>
+            <div class="stat-card" id="monitor-a"><div class="stat-name"><b>消息來源</b></div><div class="stat-track"><div class="stat-fill" id="fill-a"></div></div><div class="stat-value" id="readout-a">100</div></div>
+            <div class="stat-card" id="monitor-st"><div class="stat-name"><b>體力</b></div><div class="stat-track"><div class="stat-fill" id="fill-st"></div></div><div class="stat-value" id="readout-st">100</div></div>
+          </div>
+        </div>
+        <div class="workspace">
+          <div class="panel story-card">
+            <div class="story-top"><span class="story-tag">scene</span><span class="story-meta" id="roundEyebrow"></span></div>
+            <h2 id="roundTitle"></h2>
+            <p id="roundText"></p>
+            
+          </div>
+          <div class="panel decision-card">
+            <div class="decision-head"><span class="decision-title">你會如何應對？</span></div>
+            <div id="choices" class="choices"></div>
+          </div>
+        </div>
+        <div class="panel response-bar"><p class="feedback" id="feedback"></p><button class="next-btn" id="nextBtn">繼續採訪 →</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="end-screen" class="screen">
+    <div class="screen-fit shell" id="endInner">
+      <div class="topbar">
+        <span class="brand-badge">wrap-up</span>
+        <div class="brand-block"><div class="brand-title">採訪回顧</div><div class="brand-sub">After the assignment</div></div>
+        <div class="top-meta"><span class="chip hot">post-mortem</span><span class="chip">result</span></div>
+      </div>
+      <div class="end-grid">
+        <div class="panel end-main">
+          <div class="end-kicker" id="endEyebrow"></div>
+          <h2 id="end-title"></h2>
+          <p id="end-text"></p>
+        </div>
+        <div class="panel end-side">
+          <div class="stat-recap" id="statRecap"></div>
+          <div id="epilogue"></div>
+          <button class="cta" id="restartBtn">重新蹲點</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var STAT_LABEL = {c:"公信力", s:"時效", a:"消息來源", st:"體力"};
+  var WARN_THRESHOLD = 30;
+  var STAT_DEAD_TITLE = {c:"公信力歸零：黑畫面",s:"時效歸零：新聞已成舊聞",a:"消息來源歸零：沒有人再願意跟你談",st:"體力歸零：你在現場倒下了"};
+  var STAT_DEAD_TEXT = {
+    c:"你的報導一次次被後續事實打臉。等到真相和你寫的不一樣時，長官已經開始要求你的每一則稿子都要「再找人看過」。同業還在跑，你的名字卻先被畫上問號。",
+    s:"你堅持每一個字都查證過才發，這沒有錯——但當你的稿子送出去時，其他台已經把新聞做完，晚間新聞的順位也早排到後面。編輯台開始把重大案件交給別人跑，你留在原地，看著自己蹲點蹲出來的新聞，變成別人的獨家。",
+    a:"你消耗光了所有信任你的人。電話再打過去，沒人接了；公關室看到你的名字，新聞稿直接收回去。你還在崗位上，但這條新聞，已經不再需要你在場。",
+    st:"連續多天守在醫院、軍營、檢察署之間，你的身體終於撐不住。你被送醫、被迫請假，這條你跟了最久的新聞，最後只能交給別人接手——而你連交接的力氣都快擠不出來。"
+  };
+  var rounds = [
+    {eyebrow:"ROUND 1 · 天成醫院 · 急診室外",title:"急診室外，這一步能不能再靠近",text:"洪仲丘剛被送到天成醫院急救室，同袍與家屬情緒激動地聚在走廊，醫護人員進出頻繁，示意所有記者退到警戒線外。你注意到幾名同袍神情不對勁，交頭接耳的內容，你只聽到片段。",choices:[{label:"趁醫護人員進出的空檔，擠進走廊邊緣拍攝畫面",eff:{c:-20,s:20,a:-15,st:-5},fb:"你拍到了獨家畫面，但醫院隨後正式抗議媒體干擾急救動線，家屬對記者的觀感也更差了。"},{label:"留在警戒線外，等候醫院正式對外說明",eff:{c:10,s:-20,a:0,st:0},fb:"你沒有給醫院和家屬添麻煩，但截稿時，你手上只有跟其他人一樣的公開說法。"},{label:"不進急救室，只在外圍低聲問候在場的同袍，側面打探",eff:{c:0,s:5,a:10,st:-15},fb:"你問到了一點外界還不知道的細節，但花了很長時間耐心周旋，也耗掉不少精神。"}]},
+    {eyebrow:"ROUND 2 · 軍營大門 · 憲兵封鎖線",title:"軍用巴士開進大門，你不能跟",text:"傍晚，一輛軍用巴士載著相關證人直接駛入軍營，憲兵立刻拉起封鎖線，不准任何記者跟入。車上的人接下來說了什麼，外界很可能完全不會知道。",choices:[{label:"跟著巴士衝向大門，試圖突破封鎖線",eff:{c:-15,s:10,a:-25,st:-15},fb:"你和憲兵發生了拉扯，畫面被同業拍下傳開，軍方公關室之後對你的態度明顯強硬許多。"},{label:"在大門口耐心等候，請公關室安排事後簡短說明",eff:{c:10,s:-20,a:0,st:-5},fb:"你沒有製造衝突，但等到的說明跟新聞稿差不多，什麼新的都沒有。"},{label:"聯繫認識的退伍人脈，側面打探巴士上人員的身分與去向",eff:{c:0,s:10,a:-10,st:-20},fb:"你透過舊識問到一些線索，但這條人脈也因此暴露，之後未必還敢再幫你。"}]},
+    {eyebrow:"ROUND 3 · 家屬受訪",title:"你還需要一段家屬不想再提的時間",text:"家屬終於同意受訪，但每次提到洪仲丘從送醫到宣告不治之間的空白時間，情緒就會潰堤。你需要這段細節來還原是否真的延誤送醫，但眼前的人已經數度哽咽。",choices:[{label:"委婉但堅持把關鍵時間點問完整",eff:{c:15,s:10,a:-20,st:-10},fb:"報導的時間線終於完整了，但家屬事後覺得你在他最脆弱的時候還在逼問，往後不太想再理你。"},{label:"見好就收，先用現有的零碎資訊拼湊",eff:{c:-10,s:-10,a:15,st:5},fb:"家屬感覺被尊重，願意保持聯繫，但你的報導其實還缺一角，你自己心裡有數。"},{label:"請比較熟識家屬的同業代為側面確認這段時間，自己先不追問",eff:{c:-5,s:5,a:-5,st:-15},fb:"你省下了直接追問的壓力，但這段資訊是轉手得來的，你也欠了同業一個人情。"}]},
+    {eyebrow:"ROUND 4 · 軍事法院檢察署 · 整夜蹲點",title:"軍檢只發了一張三行的新聞稿",text:"你和SNG車整夜守在北部地方軍事法院檢察署外，案件進度受到偵查不公開限制，檢方只公布一張三行的新聞稿。截稿時間逼近，你手上幾乎沒有新的東西。",choices:[{label:"私下向熟識的書記官或法警打探非正式細節",eff:{c:-10,s:20,a:-15,st:-10},fb:"你多了一段別人沒有的內容，但如果這位內部人士被查出洩漏消息，日後他不會再冒這個險幫你。"},{label:"只依據公開新聞稿據實寫稿，不做任何推測",eff:{c:15,s:-25,a:0,st:5},fb:"你的稿子沒有任何一個字站不住腳，但版面看起來跟所有人一樣，毫無新意。"},{label:"聯合其他長期蹲點的地方記者交換情報，比對拼湊時間線",eff:{c:5,s:5,a:-15,st:-20},fb:"你們拼出了比較完整的輪廓，但每個人手上的情報都夾雜著未經證實的部分，比對過程也讓你精疲力竭。"}]},
+    {eyebrow:"ROUND 5 · 深夜來電",title:"凌晨兩點，一通不留姓名的電話",text:"凌晨兩點，一支陌生號碼打進你的手機。對方自稱是542旅的同梯，講出禁閉室內部的作息時間、值班人數等細節，內容具體到不像隨口編造——但他拒絕見面，也拒絕提供任何足以驗證身分的資訊，只留下一句：「中午前你要用不用，自己決定。」",choices:[{label:"直接把內容寫進稿子，標注「不願透露身分的同袍」",eff:{c:-30,s:25,a:10,st:-10},fb:"稿子搶在所有人前面上線，流量瞬間衝高——但你其實無法證明電話那頭的人真的在場。"},{label:"回撥同一支號碼，反覆追問細節是否前後一致，仍決定冒險採用",eff:{c:-15,s:10,a:0,st:-20},fb:"你在電話裡來回確認了四十分鐘，稿子稍微站得住腳一點，但你耗掉了整晚的精神。"},{label:"這通電話的內容先不寫進報導，只當作背景線索保留",eff:{c:15,s:-30,a:-15,st:5},fb:"你沒有讓一通查無此人的電話決定你的頭條，但截稿時，你的版面上什麼新東西都沒有。"}]},
+    {eyebrow:"ROUND 6 · 監視器「黑畫面」風波",title:"各台都在做，你卻查不到證據",text:"外界盛傳，案發地點的監視器遭黑布遮蔽，甚至懷疑軍方刻意湮滅證據，各家媒體迅速跟進大幅報導。你私下向參與案件的警方人員求證，得到的答案卻是：「沒有這回事。」",choices:[{label:"跟進「監視器遭黑布遮蔽、證據遭湮滅」的說法，搶時效",eff:{c:-30,s:25,a:-5,st:-5},fb:"你的畫面播出去了，跟其他台一樣。但幾天後檢方開記者會，證實情況並非外界盛傳的版本——沒人再提起，可是你心裡清楚，那則報導是錯的。"},{label:"只寫「對此採取保留態度」，不把傳言直接寫成事實",eff:{c:20,s:-15,a:0,st:-5},fb:"你的稿子看起來不夠聳動，點閱也不如別家，但等真相公布，你不需要修正任何一個字。"},{label:"直接在報導中點名反駁其他媒體的說法",eff:{c:15,s:5,a:-15,st:-10},fb:"你是對的，但同業不喜歡被公開打臉——接下來的合作與換情報，都變得比較尷尬。"}]},
+    {eyebrow:"ROUND 7 · 白衫軍運動 · 凱道現場",title:"群眾與警方開始拉扯，你的鏡頭對著誰",text:"白衫軍運動當天，數萬人聚集在凱道周邊。你的鏡頭前，一群激動的群眾開始與維持秩序的警方推擠——你同時拍到了群眾挑釁的畫面，也拍到了警方動作稍嫌粗魯的畫面。",choices:[{label:"優先剪入雙方衝突最激烈的片段，凸顯現場張力",eff:{c:-15,s:20,a:0,st:-10},fb:"畫面震撼、流量很好，但事後有人質疑你選擇性呈現，把整場集會簡化成一場衝突。"},{label:"剪入衝突畫面，但搭配完整前後脈絡的旁白說明",eff:{c:15,s:-10,a:0,st:-15},fb:"報導更持平了，但你花了比別人多一倍的時間整理脈絡，截稿時幾乎是壓著秒數送出。"},{label:"避開衝突畫面，只呈現整體集會氛圍與訴求標語",eff:{c:0,s:-20,a:0,st:0},fb:"你沒有渲染對立，但編輯台事後問你，為什麼別家都拍到「重點」，你卻沒有。"}]},
+    {eyebrow:"ROUND 8 · 桃園地方法院 · 開庭首日",title:"軍事審判法修法後，案件移審——法庭外群情激憤",text:"案件依修法後的程序，移交桃園地方法院審理。開庭當天，法庭外聚集大批聲援群眾與媒體，情緒高昂，法庭內的攻防卻相對平靜、專業術語繁瑣。你必須決定，這篇報導的重心要放在哪裡。",choices:[{label:"大篇幅呈現法庭外群眾的激動情緒與訴求口號",eff:{c:-10,s:15,a:0,st:-10},fb:"報導很有感染力，流量也不錯，但幾乎沒有篇幅留給法庭內實際發生的攻防內容。"},{label:"聚焦法庭內的證詞與攻防，理性呈現審理進度",eff:{c:15,s:-15,a:0,st:-15},fb:"這篇稿子更扎實、更禁得起檢驗，但相對「冷靜」，點閱數不如渲染情緒的版本。"},{label:"法庭內外各寫一段，力求兩者兼顧",eff:{c:5,s:-5,a:0,st:-20},fb:"稿子拉得很長，兩邊都顧到了一點，但你自己也清楚，這樣的處理讓兩邊都不夠深入。"}]}
+  ];
+  var headlines = ["下士退伍前兩天身亡 家屬控軍方延誤送醫","國防部長震怒 副司令鞠躬致歉","監視器畫面爭議延燒 軍方否認蓄意遮蔽","白衫軍集結 訴求軍事審判法修法","軍事審判法修法通過 案件移審地方法院","偵查不公開 檢方進度成謎"];
+  var statKeys = ['c','s','a','st'];
+  var stats = {c:100,s:100,a:100,st:100};
+  var current = 0; var awaitingNext = false;
+  function clamp(v){ return Math.max(0, Math.min(100, v)); }
+  function el(id){ return document.getElementById(id); }
+  function fitActiveScreen(){ requestAnimationFrame(function(){ var screen=document.querySelector('.screen.active'); if(!screen) return; var inner=screen.querySelector('.screen-fit'); if(!inner) return; inner.style.transform='scale(1)'; var scale=Math.min(screen.clientWidth/inner.scrollWidth, screen.clientHeight/inner.scrollHeight, 1); inner.style.transform='scale('+scale+')'; }); }
+  function buildTicker(){ el('tickerTrack').innerHTML = headlines.map(function(h){ return '<b>BREAKING</b> · '+h; }).join('　　　　'); }
+  function showScreen(id){ document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); }); el(id).classList.add('active'); fitActiveScreen(); }
+  function anyCriticalAlive(){ return statKeys.some(function(k){ return stats[k] > 0 && stats[k] <= WARN_THRESHOLD; }); }
+  function renderMonitors(){ statKeys.forEach(function(k){ var v=stats[k]; el('fill-'+k).style.width = v+'%'; el('readout-'+k).textContent=v; var mon=el('monitor-'+k); mon.classList.toggle('warning', v>0 && v<=WARN_THRESHOLD); mon.classList.toggle('dead', v<=0); }); el('alarmOverlay').classList.toggle('critical', anyCriticalAlive()); }
+  function triggerAlarmBurst(){ var overlay=el('alarmOverlay'); overlay.classList.remove('flash'); void overlay.offsetWidth; overlay.classList.add('flash'); setTimeout(function(){overlay.classList.remove('flash');},950); var app=el('app'); app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake'); setTimeout(function(){app.classList.remove('shake');},420); }
+  function renderRound(){ var r=rounds[current]; el('roundEyebrow').textContent=r.eyebrow; el('roundTitle').textContent=r.title; el('roundText').textContent=r.text; var wrap=el('choices'); wrap.innerHTML=''; var fb=el('feedback'); fb.classList.remove('show'); fb.innerHTML=''; el('nextBtn').classList.remove('show'); awaitingNext=false; r.choices.forEach(function(choice, idx){ var btn=document.createElement('button'); btn.className='choice-btn'; btn.textContent=choice.label; btn.dataset.label=String.fromCharCode(65+idx); btn.addEventListener('click', function(){ handleChoice(choice, wrap); }); wrap.appendChild(btn); }); fitActiveScreen(); }
+  function handleChoice(choice, wrap){ if(awaitingNext) return; awaitingNext=true; Array.prototype.forEach.call(wrap.children, function(b){ b.disabled=true; }); statKeys.forEach(function(k){ var delta = choice.eff[k] || 0; stats[k] = clamp(stats[k] + delta); }); renderMonitors(); if(anyCriticalAlive()) triggerAlarmBurst(); var fb=el('feedback'); fb.innerHTML='<span class="feedback-label">編輯台回報</span>'+choice.fb; fb.classList.add('show'); var dead = statKeys.find(function(k){ return stats[k] <= 0; }); setTimeout(function(){ if(dead){ showFail(dead); } else { el('nextBtn').classList.add('show'); fitActiveScreen(); } }, 600); fitActiveScreen(); }
+  function showFail(key){ el('alarmOverlay').classList.remove('critical','flash'); el('endEyebrow').textContent='採訪中止 · ROUND ' + (current+1) + ' / ' + rounds.length; el('end-title').textContent=STAT_DEAD_TITLE[key]; el('end-text').textContent=STAT_DEAD_TEXT[key]; renderRecap(); el('epilogue').innerHTML='<b>真實記者觀察：</b>「即使大家其實都還不知道真相，也很容易憑著自己的觀念去『作文』。」——曾駐守桃園採訪洪案的記者，回顧當年同業競爭下的查證壓力。（改寫自受訪內容）'; showScreen('end-screen'); fitActiveScreen(); }
+  function renderRecap(){ var recap=el('statRecap'); recap.innerHTML=''; statKeys.forEach(function(k){ var d=document.createElement('div'); d.innerHTML='<span>'+STAT_LABEL[k]+'</span>'+stats[k]; recap.appendChild(d); }); }
+  function showEnding(){ el('alarmOverlay').classList.remove('critical','flash'); el('endEyebrow').textContent='採訪結束 · 案件進入審理'; var title,text; if(stats.c>=65 && stats.s>=40 && stats.a>=40 && stats.st>=30){ title='游刃有餘的記者'; text='你在速度、查證、人脈與自己的身體之間，找到了一條還算平衡的路。這不代表你沒犯過錯，只是每一次取捨，你大致都清楚自己在拿什麼去換什麼。'; } else if(stats.c<40){ title='公信力亮紅燈的記者'; text='你搶到了不少時效，稿子也總是最早發出去。但幾次被後續事實打臉之後，你開始明白：在24小時滾動的競爭裡，查證常常是第一個被犧牲的東西——而信任要花更久才能補回來。'; } else if(stats.st<25){ title='早已燃燒殆盡的記者'; text='你撐過了每一個現場，新聞也一則沒漏。但你自己心裡清楚，這樣的日子撐不了太久——身體遲早會用某種方式，跟你討回這筆帳。'; } else if(stats.s<35){ title='總是慢半拍的記者'; text='你的稿子很少出錯，卻也很少搶第一。你把時間留給了查證跟消息來源，只是新聞的節奏，未必總是留給願意等待的人。'; } else { title='在拉扯中前進的記者'; text='沒有一次選擇是完美的，你也一路帶著幾個沒能兩全的遺憾走到這裡。這條新聞最終走向了審理，而你留在其中的，是自己一次次權衡之後的判斷。'; } el('end-title').textContent=title; el('end-text').textContent=text; renderRecap(); el('epilogue').innerHTML='<b>真實記者觀察：</b>受訪記者在回顧洪案時提到，媒體更像是把社會已經累積的情緒與訴求匯集起來的「催化劑」，而不必然是主導改革方向的力量——它能催化好的，也可能催化壞的。（改寫自受訪內容）'; showScreen('end-screen'); fitActiveScreen(); }
+  el('nextBtn').addEventListener('click', function(){ current++; if(current>=rounds.length){ showEnding(); } else { renderRound(); } });
+  el('startBtn').addEventListener('click', function(){ showScreen('game-screen'); renderMonitors(); renderRound(); });
+  el('restartBtn').addEventListener('click', function(){ stats={c:100,s:100,a:100,st:100}; current=0; el('alarmOverlay').classList.remove('critical','flash'); showScreen('title-screen'); });
+  window.addEventListener('resize', fitActiveScreen); if(document.fonts && document.fonts.ready){ document.fonts.ready.then(fitActiveScreen); }
+  buildTicker(); renderMonitors(); fitActiveScreen();
+})();
+</script>
+</body>
+</html>

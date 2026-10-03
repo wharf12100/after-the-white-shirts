@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="2013年軍事審判法修法、2025年草案方向與三宗案件的互動解析。">
+  <title>軍審權，如何離開又可能回到平時？</title>
+  <style>
+    :root{--ink:#292A28;--muted:#5b5c53;--paper:#F7F5EF;--paper2:#EDEAE0;--paper3:#E8E3D3;--line:#292A28;--line-soft:rgba(41,42,40,.18);--mil:#4B5240;--milsoft:#E4E8DE;--civil:#2f4f66;--civilsoft:#E3E9EE;--add:#EEF3E9;--addink:#3c4a30;--del:#F6EBE8;--delink:#7A2A28;--draft:#A9803F;--draftsoft:#F5EEDD;--gold:#A9803F;--focus:#7A2A28}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.75;font-size:16px}
+    button,a,summary{font:inherit}
+    button{color:inherit;cursor:pointer}
+    button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+    .eyebrow{margin:0 0 .5rem;font-size:.78rem;font-weight:700;letter-spacing:.12em;color:var(--muted)}
+    .section-note{margin:.15rem 0 0;font-size:.72rem;font-weight:400;letter-spacing:0;color:var(--muted);line-height:1.6}
+
+    main{display:block}
+    .page-view[hidden]{display:none}
+    .section{width:min(920px,calc(100% - 3rem));margin:0 auto;padding:2.6rem 0 .5rem}
+    .section-cases{padding-top:2.6rem;padding-bottom:.5rem}
+    .section-number{display:none}
+    .section-intro{max-width:640px;margin:0 0 1.8rem}
+    .section-intro h2{font-family:"Noto Serif TC","Songti TC",serif;font-weight:700;font-size:clamp(1.5rem,3vw,2rem);line-height:1.3;margin:0 0 .6rem}
+    .section-intro>p:last-child{color:var(--muted);font-size:.95rem;margin:0}
+
+    /* 條文分頁 */
+    .tabs{display:flex;gap:.4rem;border-bottom:1px solid var(--line-soft);margin-bottom:1.6rem;padding-bottom:0}
+    .tabs button{border:1px solid var(--line-soft);background:var(--paper);border-radius:6px 6px 0 0;border-bottom:0;padding:.55rem 1rem;font-weight:700;font-size:.9rem;color:var(--muted)}
+    .tabs button[aria-selected=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+    .diff-heading{margin-bottom:1rem}
+    .diff-heading h3{margin:0 0 .2rem;font-family:"Noto Serif TC",serif;font-weight:700;font-size:1.3rem}
+    .diff-heading p{margin:0;color:var(--muted);font-size:.9rem}
+
+    /* 圖例 */
+    .legend{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;margin:0 0 1.2rem;font-size:.82rem;color:var(--muted)}
+    .legend-hint{font-size:.8rem;color:var(--muted)}
+    .legend span{display:inline-flex;gap:.4rem;align-items:center;font-weight:700}
+    .legend b{width:1.3rem;height:1.3rem;display:grid;place-items:center;background:var(--paper2);border-radius:4px}
+    .legend .minus b{background:var(--del);color:var(--delink)}
+    .legend .plus b{background:var(--add);color:var(--addink)}
+    .legend .same b{color:var(--muted)}
+
+    .change-nav{display:flex;justify-content:flex-end;margin-bottom:.8rem}
+
+    /* 對照表頭：僅桌面顯示 */
+    .diff-head{display:none}
+    @media(min-width:681px){
+      .diff-head{display:grid;grid-template-columns:1fr 2rem 1fr;gap:.5rem 1.2rem;padding:0 0 .5rem;margin-bottom:.4rem;border-bottom:1px solid var(--line-soft);font-size:.8rem;font-weight:700;color:var(--muted)}
+      .diff-head span:last-child{grid-column:3}
+      .diff-head-spacer{visibility:hidden}
+    }
+
+    #diff-body{display:flex;flex-direction:column;gap:1.6rem}
+    .diff-row{display:block}
+    .diff-row-label{display:flex;align-items:center;gap:.55rem;margin:0 0 .7rem;font-size:.82rem;font-weight:700;color:var(--muted)}
+    .diff-row-index{display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;flex:0 0 auto;border-radius:50%;background:var(--paper2);color:var(--ink);font-size:.72rem;font-weight:700}
+    .diff-row-cells{display:grid;grid-template-columns:1fr;gap:.8rem 1.2rem;align-items:start}
+    .diff-row-connector{display:none}
+    @media(min-width:681px){
+      .diff-row-cells{grid-template-columns:1fr 2rem 1fr}
+      .diff-row-connector{display:flex;align-self:center;justify-self:center;color:var(--muted);font-size:1.1rem}
+    }
+
+    .diff-cell{min-width:0}
+    .diff-cell.empty{display:block}
+    .mobile-label{display:block;font-size:.76rem;font-weight:700;color:var(--muted);margin-bottom:.4rem}
+    @media(min-width:681px){.mobile-label{display:none}}
+
+    .legal-copy{display:flex;flex-direction:column;gap:.5rem}
+    .piece{display:grid;grid-template-columns:1.4rem minmax(0,1fr);align-items:start;column-gap:.6rem;width:100%;border:1px solid transparent;border-radius:6px;padding:.75rem .9rem;text-align:left;white-space:pre-wrap;line-height:1.7;font-size:.82rem;background:var(--paper2)}
+    .piece.deleted{background:var(--del);color:var(--delink)}
+    .piece.added{background:var(--add);color:var(--addink)}
+    .piece.same{background:rgba(235,231,221,.6);color:var(--ink)}
+    .piece-button{cursor:pointer;position:relative;padding-right:2.1rem}
+    .piece-button::after{content:"›";position:absolute;right:.8rem;top:50%;transform:translateY(-50%);font-weight:700;opacity:.35}
+    .piece-button:hover{border-color:currentColor}
+    .piece-button:hover::after,.piece-button:focus-visible::after{opacity:.9}
+    .piece-button.is-active{border-color:currentColor}
+    .piece-button.is-active::after{content:"✓";opacity:1;font-size:.85em}
+    .piece .sign{grid-column:1;grid-row:1;align-self:center;position:relative;width:1.15rem;height:1.15rem;border:1.5px solid currentColor;border-radius:3px;font-size:0;line-height:1;display:inline-block}
+    .piece .sign::before,.piece .sign::after{content:"";position:absolute;left:50%;top:50%;width:56%;height:1.5px;border-radius:99px;background:currentColor;transform:translate(-50%,-50%)}
+    .piece.added .sign::after{width:1.5px;height:56%}
+    .piece.deleted .sign::after{display:none}
+    .piece.same .sign::before{top:39%}
+    .piece.same .sign::after{top:61%}
+    .piece-text{grid-column:2;grid-row:1;min-width:0}
+
+    .effect{margin:0 0 1.2rem;padding:1.1rem 1.3rem;background:var(--paper2);border-radius:8px}
+    .effect h3{font-family:"Noto Serif TC",serif;font-size:1.1rem;margin:0 0 .3rem}
+    .effect #detail-plain{margin:0;max-width:720px;font-size:.92rem;line-height:1.7}
+    .effect .eyebrow{margin-bottom:.35rem}
+    #effect-dialog{margin:auto;width:min(520px,calc(100% - 2rem));max-height:none}
+    .effect-dialog-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:.6rem}
+    .effect-dialog-head .eyebrow{margin:0}
+    #effect-dialog-close{border:1px solid var(--line-soft);background:transparent;width:1.8rem;height:1.8rem;border-radius:6px;font-size:1rem;line-height:1;cursor:pointer;flex:0 0 auto;color:var(--muted)}
+    #effect-dialog-close:hover{border-color:var(--ink);color:var(--ink)}
+
+    .pager{width:min(920px,calc(100% - 3rem));margin:0 auto .8rem;display:flex;justify-content:space-between;gap:1rem}
+    .pager button{border:1px solid var(--line-soft);background:transparent;padding:.65rem 1.1rem;border-radius:6px;font-weight:700;font-size:.88rem}
+    .pager button:hover{border-color:var(--ink)}
+    .pager .next{margin-left:auto}
+
+    dialog{width:min(760px,calc(100% - 2rem));max-height:85vh;border:1px solid var(--line-soft);border-radius:10px;background:var(--paper);color:var(--ink);padding:1.4rem}
+    dialog::backdrop{background:rgba(8,13,11,.6)}
+    .dialog-head{display:flex;justify-content:space-between;gap:1rem;align-items:start;border-bottom:1px solid var(--line-soft);padding-bottom:.8rem;margin-bottom:1rem}
+    .dialog-head h2{font-family:"Noto Serif TC",serif;font-size:1.2rem;margin:0}
+    .dialog-head button{border:1px solid var(--line-soft);background:transparent;padding:.4rem .7rem;border-radius:6px;font-size:.82rem}
+    
+    /* 案件比較 */
+    .case-controls{margin-bottom:1.4rem}
+    .case-selector{display:flex;gap:.4rem;flex-wrap:wrap}
+    .case-selector button{border:1px solid var(--line-soft);background:var(--paper);padding:.5rem .95rem;border-radius:20px;font-weight:700;font-size:.85rem;color:var(--muted)}
+    .case-selector button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+    .case-grid{display:block}
+    .case-card{background:#fffdf9;border:1px solid var(--line-soft);border-radius:10px;overflow:hidden}
+    .case-top{display:flex;justify-content:space-between;gap:1rem;font-size:.78rem;font-weight:700;color:var(--muted);padding:1.2rem 1.4rem 0}
+    .case-card h3{font-family:"Noto Serif TC",serif;line-height:1.4;font-size:1.25rem;margin:.6rem 0 .2rem;padding:0 1.4rem}
+    .person{margin:0;color:var(--muted);font-size:.85rem;padding:0 1.4rem}
+    .facts{margin:.9rem 0;font-size:.92rem;line-height:1.75;padding:0 1.4rem}
+    .question{font-weight:700;background:var(--paper2);margin:0 1.4rem 1.2rem;padding:.8rem 1rem;border-radius:6px;font-size:.92rem}
+    .case-card details{margin:0 1.4rem 1.3rem;font-size:.85rem}
+    .case-card summary{cursor:pointer;font-weight:700;color:var(--muted)}
+    .case-card details ul{padding-left:1.2rem;font-size:.85rem;line-height:1.7;margin:.5rem 0}
+
+    .outcome-col{border-top:1px solid var(--line-soft)}
+    .outcome-row-label{margin:0;padding:1rem 1.4rem .3rem;font-size:.8rem;font-weight:700;color:var(--muted)}
+    .outcome-row{display:flex;flex-direction:column}
+    .outcome{padding:1rem 1.4rem;border-top:1px solid var(--line-soft)}
+    .outcome.military{background:var(--milsoft)}
+    .outcome.civil{background:var(--civilsoft)}
+    .outcome.draft{background:var(--draftsoft)}
+    .outcome-era{margin:0;font-size:.76rem;font-weight:700;color:var(--muted)}
+    .outcome h4{font-family:"Noto Serif TC",serif;font-size:1.1rem;margin:.3rem 0 .5rem}
+    .route{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-size:.84rem;font-weight:700;margin-bottom:.5rem}
+    .route span{padding:.15rem .4rem;background:var(--paper);border-radius:4px}
+    .outcome-reason{margin:0;font-size:.86rem;line-height:1.7;color:var(--ink)}
+
+    @media(min-width:681px){
+      .case-card{display:grid;grid-template-columns:1fr 1.1fr}
+      .case-left{padding:1.6rem 0;display:flex;flex-direction:column}
+      .case-top,.case-card h3,.person,.facts,.question,.case-card details{padding-left:1.8rem;padding-right:1.8rem}
+      .case-card details{margin-top:auto}
+      .outcome-col{border-top:0;border-left:1px solid var(--line-soft)}
+      .outcome-row-label{padding:1.6rem 1.8rem .4rem}
+      .outcome{padding:1rem 1.8rem}
+    }
+
+    @media(max-width:680px){
+      .section{width:min(100% - 1.2rem,920px);padding:2rem 0}
+      .pager{width:min(100% - 1.2rem,920px)}
+      .diff-heading,.effect{padding-left:0}
+    }
+    /* 桌機版由外層視窗顯示凸出的文件索引標籤，此處內部分頁改為隱藏。 */
+    @media(min-width:769px){
+      #diff .tabs{display:none}
+      #cases .case-controls{display:none}
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="page-view" data-page-view="diff">
+    <section id="diff" class="section"><div class="section-number">01</div>
+      <div class="tabs" role="tablist" aria-label="選擇比較條文"><button data-article="1" role="tab" aria-selected="true">第 1 條</button><button data-article="34" role="tab" aria-selected="false">第 34 條</button><button data-article="237" role="tab" aria-selected="false">第 237 條</button></div>
+      <div class="diff-heading"><div><h3 id="article-title"></h3></div></div>
+      <div class="legend" role="note" aria-label="圖例"><span class="minus"><b>−</b>刪除</span><span class="plus"><b>＋</b>新增</span><span class="same"><b>＝</b>保留</span><span class="legend-hint">點選色塊查看解讀 ▸</span></div>
+      <div class="diff-head"><span>2013 修法前</span><span class="diff-head-spacer" aria-hidden="true"></span><span>2013 修法後</span></div><div id="diff-body" role="tabpanel"></div>
+    </section>
+    <div class="pager"><button type="button" class="next" data-goto="cases">下一頁　虛構案例比較 →</button></div>
+    </div>
+    <div class="page-view" data-page-view="cases" hidden>
+    <section id="cases" class="section section-cases"><div class="section-number">02</div><div class="section-intro"><p class="eyebrow">虛構案例比較</p><p class="section-note">以下情境僅用於理解制度，不影射真實人物，也不代表法院對犯罪成立與否的最終認定</p></div>
+      <div class="case-controls"><div class="case-selector" aria-label="選擇案件"><button type="button" data-case-index="0" aria-pressed="true">01　涉密</button><button type="button" data-case-index="1" aria-pressed="false">02　酒駕</button><button type="button" data-case-index="2" aria-pressed="false">03　戰時命令</button></div></div><div class="case-grid" id="case-grid"></div>
+    </section>
+    <div class="pager pager-plain"><button type="button" data-goto="diff">← 上一頁</button></div>
+    </div>
+  </main>
+  <dialog id="effect-dialog" class="effect" aria-labelledby="effect-eyebrow"><div class="effect-dialog-head"><p class="eyebrow" id="effect-eyebrow">法律白話文</p><button type="button" id="effect-dialog-close" aria-label="關閉">×</button></div><p id="detail-plain"></p></dialog>
+  <script>
+  const articles={
+    "1":{title:"第 1 條｜誰受軍事審判",detail:["核心變化","平時現役軍人所犯的軍法罪，改依《刑事訴訟法》由普通司法體系追訴、審判；軍事審判的核心適用範圍縮至戰時。","案件流向：平時軍事案件，由軍事司法移往普通司法。"],rows:[
+      {before:[p("deleted","現役軍人犯陸海空軍刑法或其特別法之罪，依本法之規定追訴審判之，","刪除原本的概括管轄","舊法以現役軍人犯軍法罪作為軍事審判的主要管轄基礎，沒有先以平時、戰時切開。","足以涵蓋平時軍法罪的概括規定被移除。"),p("deleted","其在戰時犯陸海空軍刑法或其特別法以外之罪者，亦同。","重寫戰時規則","舊法另處理戰時所犯軍法以外犯罪；新法改用新的平戰架構。","管轄標準改成明列戰時與非戰時。")],after:[p("added","現役軍人戰時犯陸海空軍刑法或其特別法之罪，依本法追訴、處罰。","新增「戰時」限制","「戰時」成為適用軍事審判法的關鍵門檻，顯示2013年改革並未完全廢除軍審。","戰時軍事犯罪仍由軍事司法處理。")]},
+      {before:[],after:[p("added","現役軍人非戰時犯下列之罪者，依刑事訴訟法追訴、處罰：","新增非戰時分流","平時軍法案件改交普通司法，不代表軍人不再負刑責。","普通檢察官偵查、普通法院審判。"),p("added","一、陸海空軍刑法第四十四條至第四十六條及第七十六條第一項。\n二、前款以外陸海空軍刑法或其特別法之罪。","列出平時適用範圍","兩款合併處理現役軍人在非戰時所犯的軍法罪。","建立平時由普通司法處理的整體架構。")]},
+      {before:[p("same","非現役軍人不受軍事審判。"),p("deleted","但戒嚴法有特別規定者，從其規定。","刪除戒嚴法但書","非現役軍人不受軍審的原則保留，但戒嚴法例外文字被刪除。","條文不再保留此概括例外。")],after:[p("same","非現役軍人不受軍事審判。")]}]},
+    "34":{title:"第 34 條｜同一案件怎麼分流",dek:"當一宗案件同時包含不同犯罪事實，修法把整案併入哪一套程序的方向翻轉了。",detail:["管轄方向翻轉","修法前，只要部分犯罪事實應依軍審法審判，整案進入軍事司法；修法後，只要部分應依刑事訴訟法辦理，整案轉入普通司法。","混合案件的預設流向，從軍事司法翻轉為普通司法。"],rows:[{before:[p("deleted","犯罪事實之一部應依本法審判時，全部依本法審判之。","刪除軍審吸收規則","應受軍審的部分犯罪事實，可能把同案其他部分一併帶入軍事司法。","修法前整案方向：軍事審判法。")],after:[p("added","犯罪事實之一部應依刑事訴訟法追訴、審判時，全部依刑事訴訟法追訴、審判之。","新增普通司法吸收規則","只要一部分犯罪事實應由普通司法處理，整案便依刑事訴訟法追訴、審判。","修法後整案方向：普通司法體系。")]}]},
+    "237":{title:"第 237 條｜舊案件如何移交",dek:"偵查中、審判中、已確定與執行中的案件，都需要過渡規則。",detail:["建立轉軌機制","2013年修正後，第237條由國安法停止適用條款，改寫為完整的案件移交與分階段施行規則。","制度變動同時作用於正在進行與正在執行的案件。"],rows:[
+      {before:[p("deleted","國家安全法第八條第二項自中華民國九十年十月二日停止適用。","刪除原第237條","2013年以前，第237條是關於國家安全法第8條第2項停止適用的規定。","2013年以完整過渡規則取代原文。")],after:[p("added","本法中華民國一百零二年八月六日修正之條文施行前，已依本法開始偵查、審判或執行之第一條第二項案件，依下列規定處理之：","新增過渡規則入口","界定修法前已開始偵查、審判或執行的案件如何轉軌。","進行中的案件不因管轄改變而失去承辦機關。")]},
+      {before:[],after:[p("added","一、偵查、審判程序尚未終結者，偵查中案件移送該管檢察官偵查，審判中案件移送該管法院審判。但本法修正施行前已依法定程序進行之訴訟程序，其效力不受影響。","偵查與審判移交","偵查中的案件交普通檢察官，審判中的案件交普通法院；移交前依法完成的程序原則上有效。","軍事檢察 → 普通檢察；軍事法院 → 普通法院。")]},
+      {before:[],after:[p("added","二、裁判確定之案件，不得向該管法院上訴或抗告。但有再審或非常上訴之事由者，得依刑事訴訟法聲請再審或非常上訴。","已確定案件的救濟","改制不讓已確定裁判重新取得一般上訴或抗告，但保留再審與非常上訴。","一般救濟不重開；非常救濟保留。")]},
+      {before:[],after:[p("added","三、刑事裁判尚未執行或在執行中者，移送該管檢察官指揮執行。","執行中的案件移交","尚未執行或正在執行的刑事裁判，改由普通檢察官指揮執行。","執行權一併移往普通司法。")]},
+      {before:[],after:[p("added","本法中華民國一百零二年八月六日修正之條文，除第一條第二項第二款自公布後五個月施行外，自公布日施行。","兩階段施行","多數修正自公布日施行，第1條第2項第2款保留五個月準備期。","制度轉換不是同一天一次完成。")]}]}
+  };
+  function p(kind,text,label="",effect="",impact=""){return{kind,text,label,effect,impact}}
+  const segmentLabels={
+    "1":["現役軍人的軍審範圍與戰時限制","非戰時案件改依刑事訴訟法","非現役軍人與戒嚴法但書"],
+    "34":["同案犯罪事實的整體管轄"],
+    "237":["過渡規則與適用案件","偵查中、審判中案件","裁判確定案件的救濟","尚未執行或執行中案件","兩階段施行日期"]
+  };
+  const fullTexts={
+    "1":{
+      before:"現役軍人犯陸海空軍刑法或其特別法之罪，依本法之規定追訴審判之，其在戰時犯陸海空軍刑法或其特別法以外之罪者，亦同。\n\n非現役軍人不受軍事審判。但戒嚴法有特別規定者，從其規定。",
+      after:"現役軍人戰時犯陸海空軍刑法或其特別法之罪，依本法追訴、處罰。\n\n現役軍人非戰時犯下列之罪者，依刑事訴訟法追訴、處罰：\n一、陸海空軍刑法第四十四條至第四十六條及第七十六條第一項。\n二、前款以外陸海空軍刑法或其特別法之罪。\n\n非現役軍人不受軍事審判。"
+    },
+    "34":{
+      before:"犯罪事實之一部應依本法審判時，全部依本法審判之。",
+      after:"犯罪事實之一部應依刑事訴訟法追訴、審判時，全部依刑事訴訟法追訴、審判之。"
+    },
+    "237":{
+      before:"國家安全法第八條第二項自中華民國九十年十月二日停止適用。",
+      after:"本法中華民國一百零二年八月六日修正之條文施行前，已依本法開始偵查、審判或執行之第一條第二項案件，依下列規定處理之：\n\n一、偵查、審判程序尚未終結者，偵查中案件移送該管檢察官偵查，審判中案件移送該管法院審判。但本法修正施行前已依法定程序進行之訴訟程序，其效力不受影響。\n\n二、裁判確定之案件，不得向該管法院上訴或抗告。但有再審或非常上訴之事由者，得依刑事訴訟法聲請再審或非常上訴。\n\n三、刑事裁判尚未執行或在執行中者，移送該管檢察官指揮執行。\n\n本法中華民國一百零二年八月六日修正之條文，除第一條第二項第二款自公布後五個月施行外，自公布日施行。"
+    }
+  };
+  const eraLabels={pre:"2013 修法前",current:"2013 修法後／現行",draft:"2025 草案方向"};
+  const caseData=[
+    {index:"CASE 01",time:"非戰時",title:"作戰軍官涉嫌交付演訓部署資料",person:"現役軍官／作戰單位",facts:"林姓少校利用職務權限取得未公開的演訓部署資料，涉嫌將檔案交給境外人士。案件可能同時涉及軍事職務犯罪、國家安全與洩密相關規定。",question:"若案件發生在非戰時，會由誰偵查、審判？",basis:["《軍事審判法》第1條：平戰時管轄","《軍事審判法》第34條：同案不同犯罪事實的整體管轄","實際罪名仍須依證據及起訴內容判斷"],outcomes:{pre:o("軍事司法體系","軍事檢察機關 → 軍事法院","若起訴內容屬軍法罪，舊第1條使非戰時現役軍人也受軍事審判。","依當時《軍事審判法》偵查、審判。","獨立性、階級管轄及透明度是主要爭議。","是否屬軍法罪，仍取決於實際起訴罪名與事實。","military"),current:o("普通司法體系","普通檢察機關 → 普通法院","現行第1條規定，現役軍人非戰時所犯軍法罪依《刑事訴訟法》辦理。","適用普通刑事程序；機密證據另須處理保密。","由普通法院審判、辯護並依一般刑事程序救濟。","機密資料公開與辯方閱卷仍須個案平衡。","civil"),draft:o("可能回到軍事司法","擬由軍事檢察機關 → 軍事法院","國防部規劃把部分軍事職務犯罪納入非戰時軍審。","規劃重啟軍事偵審，研議全面強制辯護與廢除階級管轄。","軍法官獨立、強制辯護及審級須由最終法律具體化。","屬草案方向；罪名與程序以最終條文為準。","draft")}},
+    {index:"CASE 02",time:"非戰時",title:"休假士兵酒駕，營區外撞傷騎士",person:"現役士兵／休假中",facts:"陳姓士兵休假期間在營區外飲酒後駕車，與機車碰撞並造成騎士受傷。行為與軍事職務、作戰命令及軍事機密無關。",question:"只因行為人是軍人，案件就會進軍事法院嗎？",basis:["軍人身分不等於所有犯罪都受軍事審判","酒駕與過失傷害屬一般刑事犯罪情境","刑事責任與軍中懲處是不同程序"],outcomes:{pre:o("普通司法體系","普通檢察機關 → 普通法院","舊第1條在非戰時主要以是否犯軍法罪劃定軍審；一般刑事犯罪不因軍人身分自動進軍審。","依《刑事訴訟法》辦理。","享有一般刑事程序的辯護與救濟。","部隊另行懲處不會取代刑事程序。","civil"),current:o("普通司法體系","普通檢察機關 → 普通法院","這是非戰時的一般刑事犯罪，與軍事職務無直接關聯。","依一般刑事程序辦理。","適用普通法院的辯護、證據調查與上訴制度。","刑事責任、行政責任與軍中懲處應分別判斷。","civil"),draft:o("仍由普通司法處理","普通檢察機關 → 普通法院","官方規劃指出，軍人一般犯罪仍由司法機關辦理。","原則上仍適用《刑事訴訟法》。","辯護與救濟維持普通司法程序。","最終仍以通過條文與個案罪名為準。","civil")}},
+    {index:"CASE 03",time:"戰時假設",title:"防守軍官涉嫌違抗明確作戰命令",person:"現役軍官／戰時任務",facts:"本案例假設國家已依法進入戰時。王姓上尉負責防守任務，接獲明確作戰命令後涉嫌未依令執行，使部隊暴露於重大風險。",question:"2013年改革後，戰時軍事犯罪也改由普通法院嗎？",basis:["第1條保留戰時軍事犯罪的軍審管轄","戰時認定與命令合法性仍須依法判斷","本案例不預設犯罪成立"],outcomes:{pre:o("軍事司法體系","軍事檢察機關 → 軍事法院","現役軍人在戰時涉嫌軍法罪，屬軍事審判核心範圍。","依《軍事審判法》辦理。","仍須保障辯護、證據調查及法定救濟。","命令是否明確、合法及能否履行均須調查。","military"),current:o("軍事司法體系","軍事檢察機關 → 軍事法院","現行第1條仍規定，現役軍人戰時犯軍法罪依軍審法追訴、處罰。","適用戰時軍事審判程序。","戰時軍審仍受憲法與正當法律程序拘束。","本案例的戰時是法律假設，不等同緊張情勢或演習。","military"),draft:o("軍事司法體系","軍事檢察機關 → 軍事法院","2025草案主要改動非戰時管轄；戰時軍事犯罪原已在軍審範圍。","預期仍由軍事司法處理，程序須看最終修法。","獨立性、強制辯護與審級設計也影響戰時程序。","草案審級、覆核與緊急程序尚待確認。","draft")}}
+  ];
+  function o(destination,route,reason,procedure,rights,uncertainty,status){return{destination,route,reason,procedure,rights,uncertainty,status}}
+  let selectedArticle="1",selectedCase=0;
+  const CASE_ERA_ORDER=["pre","current","draft"];
+  const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+  function setDetail(d,kind){
+    const [label,effect,impact]=d;
+    const sentence=[effect,impact].filter(Boolean).join("");
+    $("#detail-plain").innerHTML=label?`<strong>${label}：</strong>${sentence}`:sentence;
+    const panel=$("#effect-dialog");
+    panel.classList.remove("kind-added","kind-deleted","kind-same","kind-default");
+    panel.classList.add(kind?`kind-${kind}`:"kind-default");
+  }
+  const effectDialog=$("#effect-dialog");
+  function openEffect(){
+    if(!effectDialog.open) effectDialog.showModal();
+  }
+  $("#effect-dialog-close").onclick=()=>effectDialog.close();
+  effectDialog.addEventListener("click",e=>{if(e.target===effectDialog)effectDialog.close()});
+  function fitDiff(){
+    const body=$("#diff-body");
+    if(!body) return;
+    body.style.removeProperty("--fit");
+  }
+  window.addEventListener("resize",()=>{clearTimeout(window.__diffFitT);window.__diffFitT=setTimeout(fitDiff,120)});
+  function renderArticle(){
+    const a=articles[selectedArticle];
+    $("#diff").dataset.article=selectedArticle;
+    $("#article-title").textContent=a.title;
+    setDetail(a.detail,null);
+    const rows=a.rows.map((row,index)=>{
+      const wrap=document.createElement("div");
+      wrap.className="diff-row";
+      const segLabel=segmentLabels[selectedArticle][index];
+      wrap.dataset.segment=segLabel;
+      wrap.setAttribute("aria-label",segLabel);
+      const label=document.createElement("p");
+      label.className="diff-row-label";
+      label.innerHTML=`<span class="diff-row-index">${String(index+1).padStart(2,"0")}</span>${segLabel}`;
+      const cells=document.createElement("div");
+      cells.className="diff-row-cells";
+      const connector=document.createElement("span");
+      connector.className="diff-row-connector";
+      connector.setAttribute("aria-hidden","true");
+      connector.textContent="→";
+      cells.append(cell(row.before,"before"),connector,cell(row.after,"after"));
+      wrap.append(label,cells);
+      return wrap;
+    });
+    $("#diff-body").replaceChildren(...rows);
+    $$('[data-article]').forEach(b=>b.setAttribute("aria-selected",String(b.dataset.article===selectedArticle)));
+    fitDiff();
+  }
+
+  function cell(pieces,side){const c=document.createElement("div");c.className=`diff-cell ${side}`;if(!pieces||!pieces.length){c.classList.add("empty");c.setAttribute("aria-hidden","true");return c}const label=document.createElement("span");label.className="mobile-label";label.textContent=side==="before"?"修法前":"修法後";const copy=document.createElement("div");copy.className="legal-copy";pieces.forEach(x=>{const el=x.kind==="same"?document.createElement("span"):document.createElement("button");if(el.tagName==="BUTTON"){el.type="button";el.className=`piece piece-button ${x.kind}`;el.setAttribute("aria-pressed","false");el.onclick=()=>{$$(".piece-button.is-active").forEach(b=>{b.classList.remove("is-active");b.setAttribute("aria-pressed","false")});el.classList.add("is-active");el.setAttribute("aria-pressed","true");setDetail([x.label,x.effect,x.impact],x.kind);openEffect()}}else el.className=`piece ${x.kind}`;const sign=document.createElement("span");sign.className="sign";sign.textContent=x.kind==="added"?"＋":x.kind==="deleted"?"−":"＝";const text=document.createElement("span");text.className="piece-text";text.textContent=x.text;el.append(sign,text);copy.append(el)});c.append(label,copy);return c}
+  function renderCases(){
+    $$('[data-case-index]').forEach(b=>b.setAttribute("aria-pressed",String(Number(b.dataset.caseIndex)===selectedCase)));
+    const x=caseData[selectedCase];
+    const outcomesHtml=CASE_ERA_ORDER.map(key=>{
+      const y=x.outcomes[key];
+      return `<div class="outcome ${y.status}" aria-live="polite">
+        <p class="outcome-era">${eraLabels[key]}</p>
+        <h4>${y.destination}</h4>
+        <div class="route"><span>案件卷宗</span><b>→</b>${y.route}</div>
+        <p class="outcome-reason">${y.reason}</p>
+      </div>`;
+    }).join("");
+    const card=document.createElement("article");
+    card.className="case-card";
+    card.innerHTML=`<div class="case-left"><div class="case-top"><span>${x.index}</span><span>${x.time}</span></div><h3>${x.title}</h3><p class="person">${x.person}</p><p class="facts">${x.facts}</p><p class="question">${x.question}</p><details><summary>查看法律依據</summary><ul>${x.basis.map(b=>`<li>${b}</li>`).join("")}</ul></details></div><div class="outcome-col"><p class="outcome-row-label">同一案件，三個時期分別怎麼處理</p><div class="outcome-row">${outcomesHtml}</div></div>`;
+    $("#case-grid").replaceChildren(card);
+  }
+  function showPage(page,scroll=true){$$('[data-page-view]').forEach(view=>view.hidden=view.dataset.pageView!==page);$$('[data-page]').forEach(button=>{if(button.dataset.page===page)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current")});document.title=page==="diff"?"Diff｜軍事審判法互動解析":"虛構案例比較｜軍事審判法互動解析";history.replaceState(null,"",page==="cases"?"#cases":"#diff");if(scroll)window.scrollTo({top:0,behavior:"smooth"});try{parent.postMessage({militaryPage:page},"*")}catch(e){}if(page==="diff")fitDiff()}
+  $$('[data-article]').forEach(b=>b.onclick=()=>{selectedArticle=b.dataset.article;renderArticle()});window.addEventListener("message",event=>{const article=String(event.data?.militaryArticle||"");if(articles[article]){selectedArticle=article;renderArticle()}if(typeof event.data?.militaryCase!=="undefined"){const idx=Number(event.data.militaryCase);if(caseData[idx]){selectedCase=idx;renderCases()}}});$$('[data-case-index]').forEach(b=>b.onclick=()=>{selectedCase=Number(b.dataset.caseIndex);renderCases()});$$('[data-page], [data-goto]').forEach(b=>b.onclick=()=>showPage(b.dataset.page||b.dataset.goto));renderArticle();renderCases();showPage(location.hash==="#cases"?"cases":"diff",false);
+  </script>
+</body>
+</html>
